@@ -1,39 +1,38 @@
 const express = require("express");
 const router = express.Router();
-const { Employees } = require("../models");
+const { Setups } = require("../models");
 
 router.get("/", async (req, res) => {
-  const listOfEmployees = await Employees.findAll();
-  res.json(listOfEmployees);
+  const listOfSetups = await Setups.findAll();
+  res.json(listOfSetups);
 });
 
 router.post("/", async (req, res) => {
-  const employee = req.body;
-  await Employees.create(employee);
-  res.json(employee);
+  const setup = req.body;
+  await Setups.create(setup);
+  res.json(setup);
 });
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
-  const listOfEmployees = await Employees.findByPk(id);
-  res.json(listOfEmployees);
+  const listOfSetups = await Setups.findByPk(id);
+  res.json(listOfSetups);
 });
 
 router.put("/:id", async (req, res) => {
   const id = req.params.id;
   const updatedData = req.body;
-  await Employees.update(updatedData, {
+  await Setups.update(updatedData, {
     where: { id: id },
   });
   res.json(updatedData);
 });
-
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
-  await Employees.destroy({
+  await Setups.destroy({
     where: { id: id },
   });
-  res.json({ message: "Employee Data Deleted" });
+  res.json({ message: "Setup Data Deleted" });
 });
 
 module.exports = router;

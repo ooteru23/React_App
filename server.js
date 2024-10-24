@@ -14,6 +14,12 @@ app.use("/employees", employeeRouter);
 const offerRouter = require("./routes/Offers");
 app.use("/offers", offerRouter);
 
+const clientRouter = require("./routes/Clients");
+app.use("/clients", clientRouter);
+
+const setupRouter = require("./routes/Setups");
+app.use("/setups", setupRouter);
+
 db.sequelize.sync().then(() => {
   app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

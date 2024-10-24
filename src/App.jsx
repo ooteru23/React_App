@@ -1,11 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import "./assets/css/index.css";
 import Home from "./components/Home";
 import Employee from "./components/Employee";
 import EditEmployee from "./components/edit/EditEmployee";
 import Offer from "./components/Offer";
 import EditOffer from "./components/edit/EditOffer";
+import Client from "./components/Client";
+import Setup from "./components/Setup";
+import EditSetup from "./components/edit/EditSetup";
 
 function App() {
   return (
@@ -92,6 +94,9 @@ function App() {
           <Route path="/employee/edit/:id" element={<EditEmployee />} />
           <Route path="/offer" element={<Offer />} />
           <Route path="/offer/edit/:id" element={<EditOffer />} />
+          <Route path="/client" element={<Client />} />
+          <Route path="/project-setup" element={<Setup />} />
+          <Route path="/project-setup/edit/:id" element={<EditSetup />} />
         </Routes>
       </div>
     </Router>

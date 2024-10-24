@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 import moment from "moment";
 
 function Offer() {
@@ -19,6 +19,9 @@ function Offer() {
   const [period_time, setPeriodTime] = useState("");
   const [price, setPrice] = useState("");
   const [information, setInformation] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -30,6 +33,7 @@ function Offer() {
         console.error("Error Fetching Data:", error);
       });
   }, []);
+
   useEffect(() => {
     axios
       .get("http://localhost:3001/offers")
@@ -41,7 +45,23 @@ function Offer() {
       });
   }, []);
 
-  const handleAddOffer = () => {
+  useEffect(() => {
+    if (location.state && location.state.message) {
+      toast.success(location.state.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      navigate(".", { replace: true, state: {} });
+    }
+  }, [location]);
+
+  const handleAddOffer = (e) => {
+    e.preventDefault();
     const newOffer = {
       creator_name: creator_name,
       client_candidate: client_candidate,
@@ -59,14 +79,61 @@ function Offer() {
     axios
       .post("http://localhost:3001/offers", newOffer)
       .then((response) => {
+        toast.success("Data Added Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          onClose: () => window.location.reload(),
+        });
         console.log("Data Added:", response.data);
       })
       .catch((error) => {
+        toast.error("Error Adding Data!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
         console.error("Error Adding Data", error);
       });
   };
 
-  const navigate = useNavigate();
+  const handleDelete = (id) => {
+    axios
+      .delete(`http://localhost:3001/offers/${id}`)
+      .then((response) => {
+        toast.success("Data Deleted Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setListOfOffer(listOfOffer.filter((offer) => offer.id !== id));
+        console.log("Data Deleted:", response.data);
+      })
+      .catch((error) => {
+        toast.error("Error Deleting Data!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        console.error("Error Deleting Data:", error);
+      });
+  };
 
   const handleEdit = (id) => {
     navigate(`/offer/edit/${id}`);
@@ -76,9 +143,37 @@ function Offer() {
     return moment(dateString).format("MMMM DD, YYYY");
   };
 
-  const formatMonth = (dateString) => {
+  const formatPeriodTime = (dateString) => {
     return moment(dateString).format("MMMM YYYY");
   };
+
+  const handleSearchChange = (e) => {
+    setSearchFilter(e.target.value);
+  };
+
+  const filteredOffer = listOfOffer.filter((offer) => {
+    const formattedDate = moment(offer.date).format("MMMM DD, YYYY");
+    const formattedValidDate = moment(offer.valid_date).format("MMMM DD, YYYY");
+    const formattedPeriodTime = moment(offer.period_time).format("MMMM YYYY");
+
+    return (
+      offer.creator_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.client_candidate
+        .toLowerCase()
+        .includes(searchFilter.toLowerCase()) ||
+      offer.marketing_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.address.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      formattedDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      formattedValidDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.pic.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.telephone.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.service.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      formattedPeriodTime.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.price.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.information.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      offer.offer_status.toLowerCase().includes(searchFilter.toLowerCase())
+    );
+  });
 
   const formatNumber = (num) => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -89,6 +184,7 @@ function Offer() {
     const formattedNumber = formatNumber(input);
     setPrice(formattedNumber);
   };
+
   return (
     <>
       <div className="container">
@@ -234,6 +330,7 @@ function Offer() {
             <button className="btn btn-success" type="submit">
               Add Data
             </button>
+            <ToastContainer />
           </div>
         </form>
         <br />
@@ -241,18 +338,20 @@ function Offer() {
         <form>
           <input
             type="text"
-            autofocus
+            autoFocus
             placeholder="Search..."
-            autocomplete="off"
+            autoComplete="off"
+            value={searchFilter}
+            onChange={handleSearchChange}
           />
         </form>
 
         <div className="row mt-3">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
-              <thead>
+              <thead class="text-center align-middle">
                 <tr>
-                  <th>Nama ID</th>
+                  <th>Nomor</th>
                   <th>Nama Kreator</th>
                   <th>Kandidat Klien</th>
                   <th>Nama Marketing</th>
@@ -269,8 +368,8 @@ function Offer() {
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {listOfOffer.map((offer, index) => {
+              <tbody class="text-center align-middle">
+                {filteredOffer.map((offer, index) => {
                   return (
                     <tr key={offer.id}>
                       <td>{index + 1}</td>
@@ -283,18 +382,25 @@ function Offer() {
                       <td>{offer.pic}</td>
                       <td>{offer.telephone}</td>
                       <td>{offer.service}</td>
-                      <td>{formatMonth(offer.period_time)}</td>
+                      <td>{formatPeriodTime(offer.period_time)}</td>
                       <td>{offer.price}</td>
                       <td>{offer.information}</td>
-                      <td>{offer.offer_status || "ON PROCESS"}</td>
+                      <td>{offer.offer_status}</td>
                       <td>
+                        {offer.offer_status !== "Accepted" && (
+                          <button
+                            className="btn btn-warning"
+                            onClick={() => handleEdit(offer.id)}
+                          >
+                            Edit
+                          </button>
+                        )}
                         <button
-                          className="btn btn-warning"
-                          onClick={() => handleEdit(offer.id)}
+                          className="btn btn-danger"
+                          onClick={() => handleDelete(offer.id)}
                         >
-                          Edit
+                          Delete
                         </button>
-                        <button className="btn btn-danger">Delete</button>
                       </td>
                     </tr>
                   );

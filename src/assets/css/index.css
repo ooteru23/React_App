@@ -1,14 +1,10 @@
-thead,
+/* thead,
 tbody {
   border: 1px solid black;
   border-collapse: collapse;
   padding: 10px;
   text-align: center;
-}
-
-#controlTable {
-  display: none;
-}
+} */
 
 .btn {
   padding: 10px 20px;
@@ -16,16 +12,16 @@ tbody {
   cursor: pointer;
 }
 
-#calculate:active {
+/* #calculate:active {
   box-shadow: inset -2px -2px 3px rgba(255, 255, 255, 0.6),
     inset 2px 2px 3px rgba(0, 0, 0, 0.6);
-}
+} */
 
-.bonus {
+/* .bonus {
   display: flex;
   flex-direction: column;
   width: 300px;
-}
+} */
 /* #form-name {
   width: 100%;
   padding: 20px;

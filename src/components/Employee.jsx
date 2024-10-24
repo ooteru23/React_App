@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+
 function Employee() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [name, setName] = useState("");
   const [job_title, setJobTitle] = useState("");
   const [status, setStatus] = useState("");
   const [salary, setSalary] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchFilter, setSearchFilter] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+
   useEffect(() => {
     axios
       .get("http://localhost:3001/employees")
@@ -20,21 +24,23 @@ function Employee() {
       });
   }, []);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (location.state && location.state.message) {
+      toast.success(location.state.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
-  const handleEdit = (id) => {
-    navigate(`/employee/edit/${id}`);
-  };
+      navigate(".", { replace: true, state: {} });
+    }
+  }, [location]);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const filteredEmployee = listOfEmployee.filter((employee) =>
-    employee.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleAddEmployee = () => {
+  const handleAddEmployee = (e) => {
+    e.preventDefault();
     const newEmployee = {
       name: name,
       job_title: job_title,
@@ -44,12 +50,79 @@ function Employee() {
     axios
       .post("http://localhost:3001/employees", newEmployee)
       .then((response) => {
+        toast.success("Data Added Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          onClose: () => window.location.reload(),
+        });
         console.log("Data Added:", response.data);
       })
       .catch((error) => {
+        toast.error("Error Adding Data!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
         console.error("Error Adding Data", error);
       });
   };
+
+  const handleDelete = (id) => {
+    axios
+      .delete(`http://localhost:3001/employees/${id}`)
+      .then((response) => {
+        toast.success("Data Deleted Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setListOfEmployee(
+          listOfEmployee.filter((employee) => employee.id !== id)
+        );
+        console.log("Data Deleted:", response.data);
+      })
+      .catch((error) => {
+        toast.error("Error Deleting Data!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        console.error("Error Deleting Data:", error);
+      });
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/employee/edit/${id}`);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchFilter(e.target.value);
+  };
+
+  const filteredEmployee = listOfEmployee.filter(
+    (employee) =>
+      employee.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      employee.job_title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      employee.status.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      employee.salary.toLowerCase().includes(searchFilter.toLowerCase())
+  );
 
   const formatNumber = (num) => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -61,32 +134,10 @@ function Employee() {
     setSalary(formattedNumber);
   };
 
-  useEffect(() => {
-    if (location.state && location.state.flashMessage) {
-      setFlashMessage(location.state.flashMessage);
-      setIsError(location.state.isError);
-    }
-  }, [location]);
-
-  const handleDelete = (id) => {
-    axios
-      .delete(`http://localhost:3001/employees/${id}`)
-      .then((response) => {
-        setListOfEmployee(
-          listOfEmployee.filter((employee) => employee.id !== id)
-        );
-
-        console.log("Data Added:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error Deleting Data:", error);
-      });
-  };
-
   return (
     <>
       <div className="container">
-        <h3 className="text-center mt-3 mb-5">Table Karyawan</h3>
+        <h3 className="text-center mt-3 mb-5">Tabel Karyawan</h3>
         <form className="row g-3" onSubmit={handleAddEmployee}>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="name"> Nama </label>
@@ -140,27 +191,28 @@ function Employee() {
             <button className="btn btn-success" type="submit">
               Add Data
             </button>
+            <ToastContainer />
           </div>
         </form>
         <br />
 
-        <div>
+        <form>
           <input
             type="text"
             autoFocus
             placeholder="Search..."
             autoComplete="off"
-            value={searchTerm}
+            value={searchFilter}
             onChange={handleSearchChange}
           />
-        </div>
+        </form>
 
         <div className="row mt-3">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead>
                 <tr>
-                  <th>Nama ID</th>
+                  <th>Nomor</th>
                   <th>Nama</th>
                   <th>Nama Job</th>
                   <th>Status</th>
