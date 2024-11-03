@@ -20,6 +20,9 @@ app.use("/clients", clientRouter);
 const setupRouter = require("./routes/Setups");
 app.use("/setups", setupRouter);
 
+const controlRouter = require("./routes/Controls");
+app.use("/controls", controlRouter);
+
 db.sequelize.sync().then(() => {
   app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

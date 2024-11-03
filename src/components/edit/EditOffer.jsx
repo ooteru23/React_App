@@ -164,6 +164,7 @@ function EditOffer() {
               placeholder="Insert Date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              disabled
               required
             />
           </div>
@@ -176,6 +177,7 @@ function EditOffer() {
               value={valid_date}
               onChange={(e) => setValidDate(e.target.value)}
               required
+              disabled
             />
           </div>
           <div className="form-group col-md-6 mt-1">

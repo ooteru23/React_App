@@ -5,7 +5,7 @@ function Home() {
     <>
       <div className="container mt-3">
         <div className="text-center">
-          <h3 className="">Home</h3>
+          <h3>Home</h3>
         </div>
       </div>
     </>

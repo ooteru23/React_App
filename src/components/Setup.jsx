@@ -371,7 +371,7 @@ function Setup() {
               onChange={handleClientChange}
               required
             >
-              <option hidden>---Please Choose Option---</option>
+              <option hidden>---Please Choose Options---</option>
               {availableClient.map((client) => (
                 <option key={client.id} value={client.client_name}>
                   {client.client_name}
@@ -520,7 +520,7 @@ function Setup() {
         <div className="row mt-3">
           <div className="col 12">
             <table className="table table-bordered border border-secondary">
-              <thead>
+              <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
@@ -536,7 +536,7 @@ function Setup() {
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-center align-middle">
                 {filteredSetup.map((setup, index) => {
                   return (
                     <tr key={setup.id}>

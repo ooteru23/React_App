@@ -8,6 +8,9 @@ import EditOffer from "./components/edit/EditOffer";
 import Client from "./components/Client";
 import Setup from "./components/Setup";
 import EditSetup from "./components/edit/EditSetup";
+import Control from "./components/Control";
+import EditControl from "./components/edit/EditControl";
+import Bonus from "./components/Bonus";
 
 function App() {
   return (
@@ -32,11 +35,7 @@ function App() {
             >
               <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                 <li className="nav-item">
-                  <Link
-                    className="nav-link active"
-                    aria-current="page"
-                    to="/home"
-                  >
+                  <Link className="nav-link active" aria-current="page" to="/">
                     Home
                   </Link>
                 </li>
@@ -97,6 +96,9 @@ function App() {
           <Route path="/client" element={<Client />} />
           <Route path="/project-setup" element={<Setup />} />
           <Route path="/project-setup/edit/:id" element={<EditSetup />} />
+          <Route path="/project-control" element={<Control />} />
+          <Route path="/project-control/edit/:id" element={<EditControl />} />
+          <Route path="/bonus-calculation" element={<Bonus />} />
         </Routes>
       </div>
     </Router>
