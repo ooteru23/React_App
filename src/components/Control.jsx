@@ -158,10 +158,6 @@ function Control() {
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
-                  <th>Karyawan 1</th>
-                  <th>Karyawan 2</th>
-                  <th>NetValue 1</th>
-                  <th>NetValue 2</th>
                   {currentMonth === "January" && <th>January</th>}
                   {currentMonth === "February" && <th>February</th>}
                   {currentMonth === "March" && <th>March</th>}
@@ -174,7 +170,6 @@ function Control() {
                   {currentMonth === "October" && <th>October</th>}
                   {currentMonth === "November" && <th>November</th>}
                   {currentMonth === "December" && <th>December</th>}
-                  <th>Status Pencairan Bonus</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -184,10 +179,6 @@ function Control() {
                     <tr key={control.id}>
                       <td>{index + 1}</td>
                       <td>{control.client_name}</td>
-                      <td>{control.employee1}</td>
-                      <td>{control.employee2}</td>
-                      <td>{control.net_value1}</td>
-                      <td>{control.net_value2}</td>
                       {currentMonth === "January" && (
                         <td>{control.month_jan}</td>
                       )}
@@ -214,7 +205,6 @@ function Control() {
                       {currentMonth === "December" && (
                         <td>{control.month_dec}</td>
                       )}
-                      <td>{control.disbursement_bonus}</td>
                       <td>
                         <button
                           className="btn btn-warning"

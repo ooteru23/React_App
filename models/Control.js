@@ -80,11 +80,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: "ON PROCESS",
     },
-    disbursement_bonus: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: "Paid",
-    },
   });
 
   return Controls;
