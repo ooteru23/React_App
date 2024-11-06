@@ -47,29 +47,71 @@ function Bonus() {
     axios
       .get("http://localhost:3001/controls")
       .then((response) => {
-        const monthKey = `month_${monthMapping[currentMonth]}`;
-
-        const filtered = response.data.filter((control) => {
-          const status = control[monthKey];
-          return status !== "ON PROCESS"; // Hide rows with "ON PROCESS"
-        });
-
         setListOfControl(response.data);
-        setFilteredControl(filtered);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
       });
   }, []);
 
-  const handleCalculate = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    const monthKey = `month_${monthMapping[currentMonth]}`;
     const filtered = listOfControl.filter((control) => {
       const controlYear = new Date(control.createdAt).getFullYear();
-      const isYearMatch = controlYear === currentYear;
-      return isYearMatch;
+      const status = control[monthKey];
+      return controlYear === currentYear && status !== "ON PROCESS";
     });
     setFilteredControl(filtered);
+  }, [listOfControl, currentYear, currentYear]);
+
+  const handleAddBonus = (e) => {
+    e.preventDefault();
+
+    const newBonus = filteredControl.map((control) => ({
+      employee_name: selectedEmployee,
+      client_name: control.client_name,
+      month: currentMonth,
+      work_status: control[`month_${monthMapping[currentMonth]}`],
+      net_value:
+        control.employee1 === selectedEmployee
+          ? control.net_value1
+          : control.employee2 === selectedEmployee
+          ? control.net_value2
+          : "-",
+      disbursement_bonus: "Paid",
+    }));
+
+    axios
+      .post("http://localhost:3001/bonuses", newBonus)
+      .then((response) => {
+        toast.success("Data Added Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          onClose: () => window.location.reload(),
+        });
+        console.log("Data Added:", response.data);
+      })
+      .catch((error) => {
+        toast.error("Error Adding Data!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        console.error("Error Adding Data", error);
+      });
+  };
+
+  const handleCalculate = (e) => {
+    e.preventDefault();
   };
 
   return (
@@ -124,7 +166,7 @@ function Bonus() {
               <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
-                  <th>Nama</th>
+                  <th hidden>Nama</th>
                   <th>Nama Klien</th>
                   <th>Bulan</th>
                   <th>Status Pekerjaan</th>
@@ -141,11 +183,11 @@ function Bonus() {
                       ? control.net_value1
                       : control.employee2 === selectedEmployee
                       ? control.net_value2
-                      : "-"; // Fallback if no match
+                      : "-";
                   return (
                     <tr key={control.id}>
                       <td>{index + 1}</td>
-                      <td>{selectedEmployee}</td>
+                      <td hidden>{selectedEmployee}</td>
                       <td>{control.client_name}</td>
                       <td>{currentMonth}</td>
                       <td>{status}</td>
@@ -161,18 +203,18 @@ function Bonus() {
       </div>
 
       <div className="container mt-3">
-        <form className="row g-3">
+        <form className="row g-3" onSubmit={handleAddBonus}>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="ontime"> Bulan On Time : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="late"> Bulan Late : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="total_value"> Total Net Value : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="salary_deduction">
@@ -182,48 +224,49 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="Debt_Recipient"> Hutang Penerimaan : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="component_bonus"> Bonus Komponen : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label>Total OnTime : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label>Persentase Total OnTime : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Total Late : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Total Late : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus OnTime : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus OnTime : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus Late : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus Late : </label>
-            <input type="text" className="form-control w-50" readonly />
+            <input type="text" className="form-control w-50" readOnly />
           </div>
           <div className="col-lg-12 mt-3">
             <button className="btn btn-success" type="submit">
               Save
             </button>
+            <ToastContainer />
           </div>
         </form>
       </div>
