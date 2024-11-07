@@ -7,10 +7,11 @@ function Bonus() {
   const [listOfControl, setListOfControl] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
-  const [currentMonth] = useState(
+  const [currentMonth, setCurrentMonth] = useState(
     new Date().toLocaleString("default", { month: "long" })
   );
   const [selectedEmployee, setSelectedEmployee] = useState("");
+  const [existingBonus, setExistingBonus] = useState([]);
 
   const monthMapping = {
     January: "jan",
@@ -64,6 +65,28 @@ function Bonus() {
     setFilteredControl(filtered);
   }, [listOfControl, currentYear, currentYear]);
 
+  const handleMonthChange = (e) => {
+    const selectedMonth = e.target.value;
+    setCurrentMonth(selectedMonth);
+
+    if (selectedEmployee) {
+      axios
+        .get(
+          `http://localhost:3001/bonuses?employee_name=${selectedEmployee}&month=${selectedMonth}`
+        )
+        .then((response) => {
+          if (response.data.length > 0) {
+            setExistingBonus(response.data);
+          } else {
+            setExistingBonus([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error Getting Bonus Data:", error);
+        });
+    }
+  };
+
   const handleAddBonus = (e) => {
     e.preventDefault();
 
@@ -78,7 +101,7 @@ function Bonus() {
           : control.employee2 === selectedEmployee
           ? control.net_value2
           : "-",
-      disbursement_bonus: "Paid",
+      disbursement_bonus: existingBonus.length > 0 ? "Paid" : "Unpaid",
     }));
 
     axios
@@ -146,7 +169,11 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="month"> Bulan </label>
-            <select className="form-select" required>
+            <select
+              className="form-select"
+              onChange={handleMonthChange}
+              required
+            >
               <option hidden>--Please Choose Options--</option>
               {Object.keys(monthMapping).map((month) => (
                 <option key={month}>{month}</option>
@@ -184,6 +211,13 @@ function Bonus() {
                       : control.employee2 === selectedEmployee
                       ? control.net_value2
                       : "-";
+                  const disbursementBonus = existingBonus.find(
+                    (bonus) =>
+                      bonus.client_name === control.client_name &&
+                      bonus.month === currentMonth
+                  )
+                    ? "Paid"
+                    : "Unpaid";
                   return (
                     <tr key={control.id}>
                       <td>{index + 1}</td>
@@ -192,7 +226,7 @@ function Bonus() {
                       <td>{currentMonth}</td>
                       <td>{status}</td>
                       <td>{netValue}</td>
-                      <td>Unpaid</td>
+                      <td>{disbursementBonus}</td>
                     </tr>
                   );
                 })}

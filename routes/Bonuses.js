@@ -3,7 +3,10 @@ const router = express.Router();
 const { Bonuses } = require("../models");
 
 router.get("/", async (req, res) => {
-  const listOfBonuses = await Bonuses.findAll();
+  const { employee_name, month } = req.query;
+  const listOfBonuses = await Bonuses.findAll({
+    where: { employee_name, month },
+  });
   res.json(listOfBonuses);
 });
 
