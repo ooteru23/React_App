@@ -12,6 +12,8 @@ function Bonus() {
   );
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [existingBonus, setExistingBonus] = useState([]);
+  const [onTime, setOnTime] = useState("");
+  const [late, setLate] = useState("");
 
   const monthMapping = {
     January: "jan",
@@ -135,6 +137,35 @@ function Bonus() {
 
   const handleCalculate = (e) => {
     e.preventDefault();
+
+    const monthKey = `month_${monthMapping[currentMonth]}`;
+
+    const totalOnTime = filteredControl
+      .filter((control) => control[monthKey] === "ON TIME")
+      .reduce((acc, control) => {
+        const netValue =
+          control.employee1 === selectedEmployee
+            ? Number(control.net_value1.replace(/,/g, ""))
+            : control.employee2 === selectedEmployee
+            ? Number(control.net_value2.replace(/,/g, ""))
+            : 0;
+        return acc + netValue;
+      }, 0);
+
+    const totalLate = filteredControl
+      .filter((control) => control[monthKey] === "LATE")
+      .reduce((acc, control) => {
+        const netValue =
+          control.employee1 === selectedEmployee
+            ? Number(control.net_value1.replace(/,/g, ""))
+            : control.employee2 === selectedEmployee
+            ? Number(control.net_value2.replace(/,/g, ""))
+            : 0;
+        return acc + netValue;
+      }, 0);
+
+    setOnTime(totalOnTime.toLocaleString("en-US"));
+    setLate(totalLate.toLocaleString("en-US"));
   };
 
   return (
@@ -240,21 +271,37 @@ function Bonus() {
         <form className="row g-3" onSubmit={handleAddBonus}>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="ontime"> Bulan On Time : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={onTime}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="late"> Bulan Late : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={late}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="total_value"> Total Net Value : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
+
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="salary_deduction">
               Pengurang (Hitungan Gaji) :
             </label>
-            <input type="text" className="form-control w-50" />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={(9000000).toLocaleString("en-US")}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="Debt_Recipient"> Hutang Penerimaan : </label>
@@ -262,39 +309,49 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="component_bonus"> Bonus Komponen : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label>Total OnTime : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label>Persentase Total OnTime : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Total Late : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Total Late : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus OnTime : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus OnTime : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={"15%"}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus Late : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input type="text" className="form-control w-50" disabled />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus Late : </label>
-            <input type="text" className="form-control w-50" readOnly />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={"10%"}
+              disabled
+            />
           </div>
           <div className="col-lg-12 mt-3">
             <button className="btn btn-success" type="submit">
