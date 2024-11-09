@@ -14,6 +14,14 @@ function Bonus() {
   const [existingBonus, setExistingBonus] = useState([]);
   const [onTime, setOnTime] = useState("");
   const [late, setLate] = useState("");
+  const [totalValue, setTotalValue] = useState("");
+  const [bonusComponent, setBonusComponent] = useState("");
+  const [percentOnTime, setPercentOnTime] = useState("");
+  const [totalOnTime, setTotalOnTime] = useState("");
+  const [percentLate, setPercentLate] = useState("");
+  const [totalLate, setTotalLate] = useState("");
+  const [bonusOnTime, setBonusOnTime] = useState("");
+  const [bonusLate, setBonusLate] = useState("");
 
   const monthMapping = {
     January: "jan",
@@ -166,6 +174,35 @@ function Bonus() {
 
     setOnTime(totalOnTime.toLocaleString("en-US"));
     setLate(totalLate.toLocaleString("en-US"));
+
+    const total = totalOnTime + totalLate;
+    setTotalValue(total.toLocaleString("en-US"));
+
+    const salaryDeduction = 9000000;
+    const bonusComp = total - salaryDeduction;
+    setBonusComponent(bonusComp.toLocaleString("en-US"));
+
+    const onTimePercent =
+      bonusComp > 0 ? Math.round((totalOnTime / total) * 100) : 0;
+    setPercentOnTime(onTimePercent + "%");
+
+    const TotalOnTimePercent = (onTimePercent / 100) * bonusComp;
+    setTotalOnTime(TotalOnTimePercent.toLocaleString("en-US"));
+
+    const latePercent = total > 0 ? Math.round((totalLate / total) * 100) : 0;
+    setPercentLate(latePercent + "%");
+
+    const TotalLatePercent = (latePercent / 100) * bonusComp;
+    setTotalLate(TotalLatePercent.toLocaleString("en-US"));
+
+    const bonusOnTimePercent = 15;
+    const calculatedBonusOnTime =
+      (bonusOnTimePercent / 100) * TotalOnTimePercent;
+    setBonusOnTime(calculatedBonusOnTime.toLocaleString("en-US"));
+
+    const bonusLatePercent = 10;
+    const calculatedBonusLate = (bonusLatePercent / 100) * TotalLatePercent;
+    setBonusLate(calculatedBonusLate.toLocaleString("en-US"));
   };
 
   return (
@@ -288,8 +325,13 @@ function Bonus() {
             />
           </div>
           <div className="form-group col-md-6 mt-3">
-            <label htmlFor="total_value"> Total Net Value : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <label htmlFor="total_value"> Total Nilai : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={totalValue}
+              disabled
+            />
           </div>
 
           <div className="form-group col-md-6 mt-3">
@@ -309,27 +351,57 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="component_bonus"> Bonus Komponen : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={bonusComponent}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label>Total OnTime : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={totalOnTime}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label>Persentase Total OnTime : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={percentOnTime}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Total Late : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={totalLate}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Total Late : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={percentLate}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus OnTime : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={bonusOnTime}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus OnTime : </label>
@@ -342,7 +414,12 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus Late : </label>
-            <input type="text" className="form-control w-50" disabled />
+            <input
+              type="text"
+              className="form-control w-50"
+              value={bonusLate}
+              disabled
+            />
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus Late : </label>
