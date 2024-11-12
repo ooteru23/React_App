@@ -11,6 +11,7 @@ import EditSetup from "./components/edit/EditSetup";
 import Control from "./components/Control";
 import EditControl from "./components/edit/EditControl";
 import Bonus from "./components/Bonus";
+import Report from "./components/Report";
 
 function App() {
   return (
@@ -87,20 +88,21 @@ function App() {
             </div>
           </div>
         </nav>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/employee" element={<Employee />} />
-          <Route path="/employee/edit/:id" element={<EditEmployee />} />
-          <Route path="/offer" element={<Offer />} />
-          <Route path="/offer/edit/:id" element={<EditOffer />} />
-          <Route path="/client" element={<Client />} />
-          <Route path="/project-setup" element={<Setup />} />
-          <Route path="/project-setup/edit/:id" element={<EditSetup />} />
-          <Route path="/project-control" element={<Control />} />
-          <Route path="/project-control/edit/:id" element={<EditControl />} />
-          <Route path="/bonus-calculation" element={<Bonus />} />
-        </Routes>
       </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/employee" element={<Employee />} />
+        <Route path="/employee/edit/:id" element={<EditEmployee />} />
+        <Route path="/offer" element={<Offer />} />
+        <Route path="/offer/edit/:id" element={<EditOffer />} />
+        <Route path="/client" element={<Client />} />
+        <Route path="/project-setup" element={<Setup />} />
+        <Route path="/project-setup/edit/:id" element={<EditSetup />} />
+        <Route path="/project-control" element={<Control />} />
+        <Route path="/project-control/edit/:id" element={<EditControl />} />
+        <Route path="/bonus-calculation" element={<Bonus />} />
+        <Route path="/bonus-report" element={<Report />} />
+      </Routes>
     </Router>
   );
 }

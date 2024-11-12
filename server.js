@@ -26,6 +26,9 @@ app.use("/controls", controlRouter);
 const bonusRouter = require("./routes/Bonuses");
 app.use("/bonuses", bonusRouter);
 
+const reportRouter = require("./routes/Reports");
+app.use("/reports", reportRouter);
+
 db.sequelize.sync().then(() => {
   app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

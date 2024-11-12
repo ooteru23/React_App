@@ -6,7 +6,7 @@ function Bonus() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
-  const [currentYear, setCurrentYear] = useState([]);
+  const [currentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(
     new Date().toLocaleString("default", { month: "long" })
   );
@@ -22,6 +22,7 @@ function Bonus() {
   const [totalLate, setTotalLate] = useState("");
   const [bonusOnTime, setBonusOnTime] = useState("");
   const [bonusLate, setBonusLate] = useState("");
+  const [salaryDeduction] = useState("9,000,000");
 
   const monthMapping = {
     January: "jan",
@@ -37,11 +38,6 @@ function Bonus() {
     November: "nov",
     December: "dec",
   };
-
-  useEffect(() => {
-    const year = new Date().getFullYear();
-    setCurrentYear(year);
-  }, []);
 
   useEffect(() => {
     axios
@@ -111,7 +107,7 @@ function Bonus() {
           : control.employee2 === selectedEmployee
           ? control.net_value2
           : "-",
-      disbursement_bonus: existingBonus.length > 0 ? "Paid" : "Unpaid",
+      disbursement_bonus: "Paid",
     }));
 
     axios
@@ -139,6 +135,30 @@ function Bonus() {
           draggable: true,
           progress: undefined,
         });
+        console.error("Error Adding Data", error);
+      });
+
+    const newReport = {
+      employee_name: selectedEmployee,
+      month: currentMonth,
+      salary_deduction: salaryDeduction,
+      month_ontime: onTime,
+      month_late: late,
+      bonus_component: bonusComponent,
+      percent_ontime: percentOnTime,
+      percent_late: percentLate,
+      total_ontime: totalOnTime,
+      total_late: totalLate,
+      bonus_ontime: bonusOnTime,
+      bonus_late: bonusLate,
+    };
+
+    axios
+      .post("http://localhost:3001/reports", newReport)
+      .then((response) => {
+        console.log("Data Added:", response.data);
+      })
+      .catch((error) => {
         console.error("Error Adding Data", error);
       });
   };
@@ -341,7 +361,7 @@ function Bonus() {
             <input
               type="text"
               className="form-control w-50"
-              value={(9000000).toLocaleString("en-US")}
+              value={salaryDeduction}
               disabled
             />
           </div>
