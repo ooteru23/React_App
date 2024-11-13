@@ -23,6 +23,7 @@ function Bonus() {
   const [bonusOnTime, setBonusOnTime] = useState("");
   const [bonusLate, setBonusLate] = useState("");
   const [salaryDeduction] = useState("9,000,000");
+  const [showTable, setShowTable] = useState(false);
 
   const monthMapping = {
     January: "jan",

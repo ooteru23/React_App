@@ -3,6 +3,9 @@ import axios from "axios";
 
 function Report() {
   const [currentYear] = useState(new Date().getFullYear());
+  const [currentMonth] = useState(
+    new Date().toLocaleString("en-US", { month: "long" })
+  );
   const [listOfReport, setListOfReport] = useState([]);
   const [filteredReport, setFilteredReport] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -38,22 +41,19 @@ function Report() {
       });
   }, [currentYear]);
 
-  const handleMonthChange = (e) => {
-    const month = e.target.value;
-    setSelectedMonth(month);
-
-    if (month === "") {
-      setFilteredReport(listOfReport);
-    } else {
-      const filteredByMonth = listOfReport.filter(
-        (report) => report.month === month
-      );
-      setFilteredReport(filteredByMonth);
-    }
-  };
-
   const handleViewReport = (e) => {
     e.preventDefault();
+
+    if (selectedMonth === currentMonth) {
+      const filteredByMonth = listOfReport.filter(
+        (report) => report.month === monthMapping[selectedMonth]
+      );
+      setFilteredReport(filteredByMonth);
+      setShowTable(true);
+    } else {
+      setFilteredReport([]);
+      setShowTable(false);
+    }
 
     const reportTotal = listOfReport.map((report) => ({
       ...report,
@@ -75,7 +75,7 @@ function Report() {
             <select
               className="form-select"
               value={selectedMonth}
-              onChange={handleMonthChange}
+              onChange={(e) => setSelectedMonth(e.target.value)}
               required
             >
               <option hidden>---Please Choose Options---</option>
@@ -100,7 +100,7 @@ function Report() {
           </div>
         </form>
         <br />
-        <div className="row mt-3">
+        <div className="row mt-3" hidden={!showTable}>
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
