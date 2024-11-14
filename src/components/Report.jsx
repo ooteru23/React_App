@@ -30,22 +30,27 @@ function Report() {
     axios
       .get("http://localhost:3001/reports")
       .then((response) => {
-        const filtered = response.data.filter(
-          (report) => new Date(report.createdAt).getFullYear() === currentYear
-        );
-        setListOfReport(filtered);
-        setFilteredReport(filtered);
+        setListOfReport(response.data);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
       });
   }, [currentYear]);
 
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value);
+    setShowTable(false);
+  };
+
   const handleViewReport = (e) => {
     e.preventDefault();
 
+    const filteredByYear = listOfReport.filter(
+      (report) => new Date(report.createdAt).getFullYear() === currentYear
+    );
+
     if (selectedMonth === currentMonth) {
-      const filteredByMonth = listOfReport.filter(
+      const filteredByMonth = filteredByYear.filter(
         (report) => report.month === monthMapping[selectedMonth]
       );
       setFilteredReport(filteredByMonth);
@@ -55,7 +60,7 @@ function Report() {
       setShowTable(false);
     }
 
-    const reportTotal = listOfReport.map((report) => ({
+    const reportTotal = filteredByYear.map((report) => ({
       ...report,
       totalBonus: (
         (parseInt(report.bonus_ontime.replace(/,/g, "")) || 0) +
@@ -75,7 +80,7 @@ function Report() {
             <select
               className="form-select"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              onChange={handleMonthChange}
               required
             >
               <option hidden>---Please Choose Options---</option>

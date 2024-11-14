@@ -7,9 +7,7 @@ function Bonus() {
   const [listOfControl, setListOfControl] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
   const [currentYear] = useState(new Date().getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(
-    new Date().toLocaleString("default", { month: "long" })
-  );
+  const [currentMonth, setCurrentMonth] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [existingBonus, setExistingBonus] = useState([]);
   const [onTime, setOnTime] = useState("");
@@ -62,19 +60,11 @@ function Bonus() {
       });
   }, []);
 
-  useEffect(() => {
-    const monthKey = `month_${monthMapping[currentMonth]}`;
-    const filtered = listOfControl.filter((control) => {
-      const controlYear = new Date(control.createdAt).getFullYear();
-      const status = control[monthKey];
-      return controlYear === currentYear && status !== "ON PROCESS";
-    });
-    setFilteredControl(filtered);
-  }, [listOfControl, currentYear, currentYear]);
-
   const handleMonthChange = (e) => {
     const selectedMonth = e.target.value;
     setCurrentMonth(selectedMonth);
+
+    setShowTable(false);
 
     if (selectedEmployee) {
       axios
@@ -167,9 +157,31 @@ function Bonus() {
   const handleCalculate = (e) => {
     e.preventDefault();
 
+    if (!currentMonth || !selectedEmployee) {
+      toast.error("Please select both employee and month before calculating.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+
     const monthKey = `month_${monthMapping[currentMonth]}`;
 
-    const totalOnTime = filteredControl
+    const filtered = listOfControl.filter((control) => {
+      const controlYear = new Date(control.createdAt).getFullYear();
+      const status = control[monthKey];
+      return controlYear === currentYear && status && status !== "ON PROCESS";
+    });
+
+    setFilteredControl(filtered);
+    setShowTable(filtered.length > 0);
+
+    const totalOnTime = filtered
       .filter((control) => control[monthKey] === "ON TIME")
       .reduce((acc, control) => {
         const netValue =
@@ -181,7 +193,7 @@ function Bonus() {
         return acc + netValue;
       }, 0);
 
-    const totalLate = filteredControl
+    const totalLate = filtered
       .filter((control) => control[monthKey] === "LATE")
       .reduce((acc, control) => {
         const netValue =
@@ -276,7 +288,7 @@ function Bonus() {
           </div>
         </form>
         <br />
-        <div className="row mt-3">
+        <div className="row mt-3" hidden={!showTable}>
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
