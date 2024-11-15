@@ -114,6 +114,7 @@ function Bonus() {
           progress: undefined,
           onClose: () => window.location.reload(),
         });
+        console.log("Data Added:", response.data);
       })
       .catch((error) => {
         if (error.response && error.response.status === 409) {
@@ -136,6 +137,7 @@ function Bonus() {
             draggable: true,
             progress: undefined,
           });
+          console.error("Error Adding Data", error);
         }
       });
 

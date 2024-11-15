@@ -49,7 +49,7 @@ function Employee() {
     };
     axios
       .post("http://localhost:3001/employees", newEmployee)
-      .then((response) => {
+      .then(() => {
         toast.success("Data Added Successfully!", {
           position: "top-right",
           autoClose: 3000,
@@ -63,16 +63,28 @@ function Employee() {
         console.log("Data Added:", response.data);
       })
       .catch((error) => {
-        toast.error("Error Adding Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Adding Data", error);
+        if (error.response && error.response.status === 409) {
+          toast.error(error.response.data.message, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        } else {
+          toast.error("Error Adding Data", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+          console.error("Error Adding Data", error);
+        }
       });
   };
 

@@ -10,19 +10,28 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const report = req.body;
 
+  if (
+    (!Array.isArray(report) && typeof report !== "object") ||
+    (Array.isArray(report) && report.length === 0)
+  ) {
+    return res.status(400).json({ message: "Invalid report data" });
+  }
+
+  const reportData = Array.isArray(report) ? report[0] : report;
+
   const existingReport = await Reports.findOne({
     where: {
-      employee_name: report[0].employee_name,
-      salary_deduction: report[0].salary_deduction,
-      month_ontime: report[0].month_ontime,
-      month_late: report[0].month_late,
-      bonus_component: report[0].bonus_component,
-      percent_ontime: report[0].percent_ontime,
-      percent_late: report[0].percent_late,
-      total_ontime: report[0].total_ontime,
-      total_late: report[0].total_late,
-      bonus_ontime: report[0].bonus_ontime,
-      bonus_late: report[0].bonus_late,
+      employee_name: reportData.employee_name,
+      salary_deduction: reportData.salary_deduction,
+      month_ontime: reportData.month_ontime,
+      month_late: reportData.month_late,
+      bonus_component: reportData.bonus_component,
+      percent_ontime: reportData.percent_ontime,
+      percent_late: reportData.percent_late,
+      total_ontime: reportData.total_ontime,
+      total_late: reportData.total_late,
+      bonus_ontime: reportData.bonus_ontime,
+      bonus_late: reportData.bonus_late,
     },
   });
 
