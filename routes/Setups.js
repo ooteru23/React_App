@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Setups, Controls } = require("../models");
+const { Setups } = require("../models");
 
 router.get("/", async (req, res) => {
   const listOfSetups = await Setups.findAll();
@@ -8,20 +8,9 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const setupData = req.body;
-  const newSetup = await Setups.create(setupData);
-
-  const controlData = {
-    client_name: setupData.client_candidate,
-    employee1: setupData.employee1,
-    employee2: setupData.employee2,
-    net_value1: setupData.net_value1,
-    net_value2: setupData.net_value2,
-  };
-
-  const newControl = await Controls.create(controlData);
-
-  res.json({ newSetup, newControl });
+  const setup = req.body;
+  await Setups.create(setup);
+  res.json(setup);
 });
 
 router.get("/:id", async (req, res) => {

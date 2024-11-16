@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
   });
 
   if (existingBonus) {
-    return res.status(409).json({ message: "Data Already In There" });
+    return res.status(409).json({ message: "Data Already Exists" });
   }
 
   await Bonuses.bulkCreate(bonus);

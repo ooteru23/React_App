@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Reports } = require("../models");
+const { months } = require("moment");
 
 router.get("/", async (req, res) => {
   const listOfReports = await Reports.findAll();
@@ -22,6 +23,7 @@ router.post("/", async (req, res) => {
   const existingReport = await Reports.findOne({
     where: {
       employee_name: reportData.employee_name,
+      month: reportData.month,
       salary_deduction: reportData.salary_deduction,
       month_ontime: reportData.month_ontime,
       month_late: reportData.month_late,
@@ -36,7 +38,7 @@ router.post("/", async (req, res) => {
   });
 
   if (existingReport) {
-    return res.status(409).json({ message: "Data sudah ada di database." });
+    return res.status(409).json({ message: "Data Already Exists" });
   }
 
   await Reports.create(report);

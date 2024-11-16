@@ -115,6 +115,58 @@ function Setup() {
       });
   };
 
+  const handleSaveToControl = (e) => {
+    e.preventDefault();
+
+    const saveToControl = filteredSetup.map((setup) => ({
+      client_name: setup.client_candidate,
+      employee1: setup.employee1,
+      employee2: setup.employee2,
+      net_value1: setup.net_value1,
+      net_value2: setup.net_value2,
+    }));
+
+    axios
+      .post("http://localhost:3001/controls", saveToControl)
+      .then((response) => {
+        toast.success("Data Saved Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          onClose: () => window.location.reload(),
+        });
+        console.log("Data Added:", response.data);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 409) {
+          toast.error(error.response.data.message, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        } else {
+          toast.error("Error Adding Data", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+          console.error("Error Adding Data", error);
+        }
+      });
+  };
+
   const handleDelete = (id) => {
     axios
       .delete(`http://localhost:3001/setups/${id}`)
@@ -572,6 +624,13 @@ function Setup() {
             </table>
           </div>
         </div>
+        <form className="row g-3" onSubmit={handleSaveToControl}>
+          <div className="col-lg-12 mt-3">
+            <button className="btn btn-success" type="submit">
+              Save
+            </button>
+          </div>
+        </form>
       </div>
     </>
   );
