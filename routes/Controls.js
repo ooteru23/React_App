@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Controls } = require("../models");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res) => {
   const listOfControls = await Controls.findAll();
@@ -16,22 +17,32 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   const control = req.body;
 
-  const existingControl = await Controls.findOne({
-    where: {
-      client_name: control[0].client_name,
-      employee1: control[0].employee1,
-      employee2: control[0].employee2,
-      net_value1: control[0].net_value1,
-      net_value2: control[0].net_value2,
-    },
+  const existingClientNames = await Controls.findAll({
+    where: { client_name: control.map((item) => item.client_name) },
+    attributes: [
+      "client_name",
+      "employee1",
+      "employee2",
+      "net_value1",
+      "net_value2",
+    ],
+  }).then((data) => data.map((item) => item.client_name));
+
+  const newObjects = control.filter(
+    (item) => !existingClientNames.includes(item.client_name)
+  );
+
+  const response = newObjects.length
+    ? await Controls.bulkCreate(newObjects)
+    : [];
+
+  res.json({
+    message: newObjects.length
+      ? "Data Saved successfully."
+      : "Data Already Exists.",
+    newData: response,
+    existingData: existingClientNames,
   });
-
-  if (existingControl) {
-    return res.status(409).json({ message: "Data Already Exists" });
-  }
-
-  await Controls.bulkCreate(control);
-  res.json(control);
 });
 
 router.put("/:id", async (req, res) => {

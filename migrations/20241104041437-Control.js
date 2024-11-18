@@ -2,15 +2,17 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("Controls", "disbursement_bonus");
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.addIndex(
+      "Controls",
+      ["client_name", "employee1", "employee2", "net_value1", "net_value2"],
+      {
+        unique: true,
+        name: "controls_unique_index",
+      }
+    );
   },
-
-  // async down(queryInterface, Sequelize) {
-  //   await queryInterface.addColumn("Control", "disbursement_bonus", {
-  //     type: Sequelize.STRING,
-  //     allowNull: false,
-  //     defaultValue: "Paid",
-  //   });
-  // },
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.removeIndex("Controls", "controls_unique_index");
+  },
 };
