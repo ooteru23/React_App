@@ -17,7 +17,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   const control = req.body;
 
-  const existingClientNames = await Controls.findAll({
+  const existingControl = await Controls.findAll({
     where: { client_name: control.map((item) => item.client_name) },
     attributes: [
       "client_name",
@@ -29,7 +29,7 @@ router.post("/", async (req, res) => {
   }).then((data) => data.map((item) => item.client_name));
 
   const newObjects = control.filter(
-    (item) => !existingClientNames.includes(item.client_name)
+    (item) => !existingControl.includes(item.client_name)
   );
 
   const response = newObjects.length
@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
       ? "Data Saved successfully."
       : "Data Already Exists.",
     newData: response,
-    existingData: existingClientNames,
+    existingData: existingControl,
   });
 });
 

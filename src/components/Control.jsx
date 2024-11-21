@@ -60,6 +60,7 @@ function Control() {
 
   const handleCheckData = (e) => {
     e.preventDefault();
+
     const filtered = listOfControl.filter((control) => {
       const controlYear = new Date(control.createdAt).getFullYear();
       const isEmployeeMatch =
@@ -75,41 +76,6 @@ function Control() {
 
   const handleEmployeeChange = (e) => {
     setSelectedEmployee(e.target.value);
-  };
-
-  const handleEdit = (id) => {
-    navigate(`/project-control/edit/${id}`);
-  };
-
-  const handleDelete = (id) => {
-    axios
-      .delete(`http://localhost:3001/controls/${id}`)
-      .then((response) => {
-        toast.success("Data Deleted Successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClose: () => window.location.reload(),
-        });
-        setListOfControl(listOfControl.filter((control) => control.id !== id));
-        console.log("Data Deleted:", response.data);
-      })
-      .catch((error) => {
-        toast.error("Error Deleting Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Deleting Data:", error);
-      });
   };
 
   return (
@@ -158,19 +124,18 @@ function Control() {
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
-                  {currentMonth === "January" && <th>January</th>}
-                  {currentMonth === "February" && <th>February</th>}
-                  {currentMonth === "March" && <th>March</th>}
-                  {currentMonth === "April" && <th>April</th>}
-                  {currentMonth === "May" && <th>May</th>}
-                  {currentMonth === "June" && <th>June</th>}
-                  {currentMonth === "July" && <th>July</th>}
-                  {currentMonth === "August" && <th>August</th>}
-                  {currentMonth === "September" && <th>September</th>}
-                  {currentMonth === "October" && <th>October</th>}
-                  {currentMonth === "November" && <th>November</th>}
-                  {currentMonth === "December" && <th>December</th>}
-                  <th>Actions</th>
+                  <th>January</th>
+                  <th>February</th>
+                  <th>March</th>
+                  <th>April</th>
+                  <th>May</th>
+                  <th>June</th>
+                  <th>July</th>
+                  <th>August</th>
+                  <th>September</th>
+                  <th>October</th>
+                  <th>November</th>
+                  <th>December</th>
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
@@ -179,46 +144,20 @@ function Control() {
                     <tr key={control.id}>
                       <td>{index + 1}</td>
                       <td>{control.client_name}</td>
-                      {currentMonth === "January" && (
-                        <td>{control.month_jan}</td>
-                      )}
-                      {currentMonth === "February" && (
-                        <td>{control.month_feb}</td>
-                      )}
-                      {currentMonth === "March" && <td>{control.month_mar}</td>}
-                      {currentMonth === "April" && <td>{control.month_apr}</td>}
-                      {currentMonth === "May" && <td>{control.month_may}</td>}
-                      {currentMonth === "June" && <td>{control.month_jun}</td>}
-                      {currentMonth === "July" && <td>{control.month_jul}</td>}
-                      {currentMonth === "August" && (
-                        <td>{control.month_aug}</td>
-                      )}
-                      {currentMonth === "September" && (
-                        <td>{control.month_sep}</td>
-                      )}
-                      {currentMonth === "October" && (
-                        <td>{control.month_oct}</td>
-                      )}
-                      {currentMonth === "November" && (
-                        <td>{control.month_nov}</td>
-                      )}
+                      <td>{control.month_jan}</td>
+                      <td>{control.month_feb}</td>
+                      <td>{control.month_mar}</td>
+                      <td>{control.month_apr}</td>
+                      <td>{control.month_may}</td>
+                      <td>{control.month_jun}</td>
+                      <td>{control.month_jul}</td>
+                      <td>{control.month_aug}</td>
+                      <td>{control.month_sep}</td>
+                      <td>{control.month_oct}</td>
+                      <td>{control.month_nov}</td>
                       {currentMonth === "December" && (
                         <td>{control.month_dec}</td>
                       )}
-                      <td>
-                        <button
-                          className="btn btn-warning"
-                          onClick={() => handleEdit(control.id)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleDelete(control.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
                     </tr>
                   );
                 })}

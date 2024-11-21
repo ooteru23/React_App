@@ -13,23 +13,33 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const bonus = req.body;
 
-  const existingBonus = await Bonuses.findOne({
-    where: {
-      employee_name: bonus[0].employee_name,
-      client_name: bonus[0].client_name,
-      month: bonus[0].month,
-      work_status: bonus[0].work_status,
-      net_value: bonus[0].net_value,
-      disbursement_bonus: bonus[0].disbursement_bonus,
-    },
+  const existingBonus = await Bonuses.findAll({
+    where: { employee_name: bonus.map((item) => item.employee_name) },
+    attributes: [
+      "employee_name",
+      "client_name",
+      "month",
+      "work_status",
+      "net_value",
+      "disbursement_bonus",
+    ],
+  }).then((data) => data.map((item) => item.employee_name));
+
+  const newObjects = bonus.filter(
+    (item) => !existingBonus.includes(item.employee_name)
+  );
+
+  const response = newObjects.length
+    ? await Bonuses.bulkCreate(newObjects)
+    : [];
+
+  res.json({
+    message: newObjects.length
+      ? "Data Saved successfully."
+      : "Data Already Exists.",
+    newData: response,
+    existingData: existingBonus,
   });
-
-  if (existingBonus) {
-    return res.status(409).json({ message: "Data Already Exists" });
-  }
-
-  await Bonuses.bulkCreate(bonus);
-  res.json(bonus);
 });
 
 module.exports = router;

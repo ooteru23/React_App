@@ -20,7 +20,7 @@ function Bonus() {
   const [totalLate, setTotalLate] = useState("");
   const [bonusOnTime, setBonusOnTime] = useState("");
   const [bonusLate, setBonusLate] = useState("");
-  const [salaryDeduction] = useState("9,000,000");
+  const [salaryDeduction, setSalaryDeduction] = useState("");
   const [showTable, setShowTable] = useState(false);
 
   const monthMapping = {
@@ -103,8 +103,8 @@ function Bonus() {
 
     axios
       .post("http://localhost:3001/bonuses", newBonus)
-      .then(() => {
-        toast.success("Data Added Successfully!", {
+      .then((response) => {
+        toast.success("Data Saved Successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -211,18 +211,16 @@ function Bonus() {
     const total = totalOnTime + totalLate;
     setTotalValue(total.toLocaleString("en-US"));
 
-    const salaryDeduction = 9000000;
     const bonusComp = total - salaryDeduction;
     setBonusComponent(bonusComp.toLocaleString("en-US"));
 
-    const onTimePercent =
-      bonusComp > 0 ? Math.round((totalOnTime / total) * 100) : 0;
+    const onTimePercent = Math.round((totalOnTime / total) * 100);
     setPercentOnTime(onTimePercent + "%");
 
     const TotalOnTimePercent = (onTimePercent / 100) * bonusComp;
     setTotalOnTime(TotalOnTimePercent.toLocaleString("en-US"));
 
-    const latePercent = total > 0 ? Math.round((totalLate / total) * 100) : 0;
+    const latePercent = Math.round((totalLate / total) * 100);
     setPercentLate(latePercent + "%");
 
     const TotalLatePercent = (latePercent / 100) * bonusComp;
@@ -374,8 +372,11 @@ function Bonus() {
             <input
               type="text"
               className="form-control w-50"
-              value={salaryDeduction}
-              disabled
+              value={salaryDeduction.toLocaleString("en-US")}
+              onChange={(e) => {
+                const Value = e.target.value.replace(/[^0-9]/g, "");
+                setSalaryDeduction(Number(Value));
+              }}
             />
           </div>
           <div className="form-group col-md-6 mt-3">

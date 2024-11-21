@@ -116,13 +116,19 @@ function Employee() {
     setSearchFilter(e.target.value);
   };
 
-  const filteredEmployee = listOfEmployee.filter(
-    (employee) =>
-      employee.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      employee.job_title.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      employee.status.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      employee.salary.toLowerCase().includes(searchFilter.toLowerCase())
-  );
+  const filteredEmployee = listOfEmployee
+    .filter(
+      (employee) =>
+        employee.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        employee.job_title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        employee.status.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        employee.salary.toLowerCase().includes(searchFilter.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (a.status === "Inactive" && b.status !== "Inactive") return 1;
+      if (a.status !== "Inactive" && b.status === "Inactive") return -1;
+      return 0;
+    });
 
   const formatNumber = (num) => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");

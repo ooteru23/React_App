@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 
 function Setup() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
+  const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [listOfClient, setListOfClient] = useState([]);
   const [listOfSetup, setListOfSetup] = useState([]);
   const [addedClient, setAddedClient] = useState([]);
@@ -27,6 +28,10 @@ function Setup() {
       .get("http://localhost:3001/employees")
       .then((response) => {
         setListOfEmployee(response.data);
+        const activeEmployees = response.data.filter(
+          (employee) => employee.status !== "Inactive"
+        );
+        setFilteredEmployee(activeEmployees);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -239,11 +244,11 @@ function Setup() {
     }
   };
 
-  const filteredEmployee1 = listOfEmployee.filter(
+  const filteredEmployee1 = filteredEmployee.filter(
     (employee) => employee.name !== employee2
   );
 
-  const filteredEmployee2 = listOfEmployee.filter(
+  const filteredEmployee2 = filteredEmployee.filter(
     (employee) => employee.name !== employee1
   );
 

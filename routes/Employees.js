@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Employees } = require("../models");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res) => {
   const listOfEmployees = await Employees.findAll();

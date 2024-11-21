@@ -6,6 +6,7 @@ import moment from "moment";
 
 function Offer() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
+  const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [listOfOffer, setListOfOffer] = useState([]);
   const [creator_name, setCreatorName] = useState("");
   const [client_candidate, setClientCandidate] = useState("");
@@ -28,6 +29,10 @@ function Offer() {
       .get("http://localhost:3001/employees")
       .then((response) => {
         setListOfEmployee(response.data);
+        const activeEmployees = response.data.filter(
+          (employee) => employee.status !== "Inactive"
+        );
+        setFilteredEmployee(activeEmployees);
       })
       .catch((error) => {
         console.error("Error Fetching Data:", error);
@@ -199,8 +204,8 @@ function Offer() {
               required
             >
               <option hidden>--Please Choose Options--</option>
-              {listOfEmployee.map((employee) => (
-                <option>{employee.name}</option>
+              {filteredEmployee.map((employee) => (
+                <option key={employee.id}>{employee.name}</option>
               ))}
             </select>
           </div>
