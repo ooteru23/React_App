@@ -101,7 +101,7 @@ function Client() {
                   <th>Nomor Telepon</th>
                   <th>Jasa</th>
                   <th>Harga Kontrak</th>
-                  <th>Tanggal Berlaku</th>
+                  <th>Tanggal Mulai</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -116,7 +116,7 @@ function Client() {
                       <td>{client.telephone}</td>
                       <td>{client.service}</td>
                       <td>{client.contract_value}</td>
-                      <td>{formatDate(client.valid_date)}</td>
+                      <td>{formatDate(client.createdAt)}</td>
                       <td>
                         <button
                           className="btn btn-danger"

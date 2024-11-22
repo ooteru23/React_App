@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import Select from "react-select";
 
 function Control() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -15,6 +16,52 @@ function Control() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const months = [
+    { key: "month_jan", name: "January" },
+    { key: "month_feb", name: "February" },
+    { key: "month_mar", name: "March" },
+    { key: "month_apr", name: "April" },
+    { key: "month_may", name: "May" },
+    { key: "month_jun", name: "June" },
+    { key: "month_jul", name: "July" },
+    { key: "month_aug", name: "August" },
+    { key: "month_sep", name: "September" },
+    { key: "month_oct", name: "October" },
+    { key: "month_nov", name: "November" },
+    { key: "month_dec", name: "December" },
+  ];
+
+  const options = [
+    { value: "On Time", label: "On Time" },
+    { value: "Late", label: "Late" },
+  ];
+
+  const handleSelectChange = (control, monthKey, selectedOption) => {
+    control[monthKey] = selectedOption ? selectedOption.value : "";
+    setFilteredControl([...filteredControl]);
+  };
+
+  const renderMonthDropdowns = (control) => {
+    const currentMonthIndex = months.findIndex(
+      (month) => month.name === currentMonth
+    );
+    return months.slice(0, currentMonthIndex + 1).map((month) => (
+      <td key={month.key}>
+        <Select
+          options={options}
+          value={{
+            value: control[month.key],
+            label: control[month.key] || "Select",
+          }}
+          onChange={(selectedOption) =>
+            handleSelectChange(control, month.key, selectedOption)
+          }
+          placeholder="Select"
+          isClearable
+        />
+      </td>
+    ));
+  };
   useEffect(() => {
     const year = new Date().getFullYear();
     setCurrentYear(year);
@@ -144,20 +191,7 @@ function Control() {
                     <tr key={control.id}>
                       <td>{index + 1}</td>
                       <td>{control.client_name}</td>
-                      <td>{control.month_jan}</td>
-                      <td>{control.month_feb}</td>
-                      <td>{control.month_mar}</td>
-                      <td>{control.month_apr}</td>
-                      <td>{control.month_may}</td>
-                      <td>{control.month_jun}</td>
-                      <td>{control.month_jul}</td>
-                      <td>{control.month_aug}</td>
-                      <td>{control.month_sep}</td>
-                      <td>{control.month_oct}</td>
-                      <td>{control.month_nov}</td>
-                      {currentMonth === "December" && (
-                        <td>{control.month_dec}</td>
-                      )}
+                      {renderMonthDropdowns(control)}
                     </tr>
                   );
                 })}

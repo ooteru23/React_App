@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Controls } = require("../models");
-const { Op } = require("sequelize");
+const { Controls, Offers } = require("../models");
 
 router.get("/", async (req, res) => {
   const listOfControls = await Controls.findAll();

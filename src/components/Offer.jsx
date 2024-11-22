@@ -156,29 +156,51 @@ function Offer() {
     setSearchFilter(e.target.value);
   };
 
-  const filteredOffer = listOfOffer.filter((offer) => {
-    const formattedDate = moment(offer.date).format("MMMM DD, YYYY");
-    const formattedValidDate = moment(offer.valid_date).format("MMMM DD, YYYY");
-    const formattedPeriodTime = moment(offer.period_time).format("MMMM YYYY");
+  const filteredOffer = listOfOffer
+    .filter((offer) => {
+      const formattedDate = moment(offer.date).format("MMMM DD, YYYY");
+      const formattedValidDate = moment(offer.valid_date).format(
+        "MMMM DD, YYYY"
+      );
+      const formattedPeriodTime = moment(offer.period_time).format("MMMM YYYY");
 
-    return (
-      offer.creator_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.client_candidate
-        .toLowerCase()
-        .includes(searchFilter.toLowerCase()) ||
-      offer.marketing_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.address.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      formattedDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      formattedValidDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.pic.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.telephone.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.service.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      formattedPeriodTime.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.price.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.information.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      offer.offer_status.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  });
+      return (
+        offer.creator_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        offer.client_candidate
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        offer.marketing_name
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        offer.address.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        formattedDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        formattedValidDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        offer.pic.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        offer.telephone.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        offer.service.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        formattedPeriodTime
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        offer.price.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        offer.information.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        offer.offer_status.toLowerCase().includes(searchFilter.toLowerCase())
+      );
+    })
+    .sort((a, b) => {
+      if (
+        (a.status === "Rejected" || a.status === "Nothing") &&
+        b.status !== "Rejected" &&
+        b.status !== "Nothing"
+      )
+        return 1;
+      if (
+        (a.status === "Rejected" || a.status === "Nothing") &&
+        b.status !== "Rejected" &&
+        b.status !== "Nothing"
+      )
+        return -1;
+      return 0;
+    });
 
   const formatNumber = (num) => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");

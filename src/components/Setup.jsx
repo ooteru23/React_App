@@ -15,8 +15,8 @@ function Setup() {
   const [software_price, setSoftwarePrice] = useState("");
   const [employee1, setEmployee1] = useState("");
   const [employee2, setEmployee2] = useState("");
-  const [percent1, setPercent1] = useState("");
-  const [percent2, setPercent2] = useState("");
+  const [percent1, setPercent1] = useState("%");
+  const [percent2, setPercent2] = useState("%");
   const [net_value1, setNetValue1] = useState("");
   const [net_value2, setNetValue2] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
