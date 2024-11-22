@@ -32,7 +32,7 @@ function Control() {
   ];
 
   const options = [
-    { value: "On Time", label: "On Time" },
+    { value: "ON TIME", label: "ON TIME" },
     { value: "Late", label: "Late" },
   ];
 
@@ -45,23 +45,35 @@ function Control() {
     const currentMonthIndex = months.findIndex(
       (month) => month.name === currentMonth
     );
-    return months.slice(0, currentMonthIndex + 1).map((month) => (
-      <td key={month.key}>
-        <Select
-          options={options}
-          value={{
-            value: control[month.key],
-            label: control[month.key] || "Select",
-          }}
-          onChange={(selectedOption) =>
-            handleSelectChange(control, month.key, selectedOption)
-          }
-          placeholder="Select"
-          isClearable
-        />
-      </td>
-    ));
+
+    return months.slice(0, currentMonthIndex + 1).map((month) => {
+      const monthValue = control[month.key]; // Nilai bulan saat ini
+
+      // Jika nilai bulan kosong, jangan tampilkan dropdown
+      if (!monthValue) {
+        return <td key={month.key}></td>; // Kosongkan kolom tanpa dropdown
+      }
+
+      // Tampilkan dropdown jika ada nilai
+      return (
+        <td key={month.key}>
+          <Select
+            options={options}
+            value={{
+              value: control[month.key],
+              label: control[month.key],
+            }}
+            onChange={(selectedOption) =>
+              handleSelectChange(control, month.key, selectedOption)
+            }
+            placeholder="Select"
+            isClearable
+          />
+        </td>
+      );
+    });
   };
+
   useEffect(() => {
     const year = new Date().getFullYear();
     setCurrentYear(year);
@@ -80,7 +92,7 @@ function Control() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/controls")
+      .get("http://localhost:3001/controls/adjusted-data/")
       .then((response) => {
         setListOfControl(response.data);
         setFilteredControl(response.data);

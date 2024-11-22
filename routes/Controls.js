@@ -6,6 +6,49 @@ router.get("/", async (req, res) => {
   const listOfControls = await Controls.findAll();
   res.json(listOfControls);
 });
+router.get("/adjusted-data", async (req, res) => {
+  // Ambil data dari tabel offers
+  const offers = await Offers.findAll({
+    attributes: ["client_candidate", "period_time"],
+  });
+
+  // Ambil semua data dari tabel controls
+  const controls = await Controls.findAll();
+
+  // Sesuaikan period_time di offers dengan month_jan hingga month_dec di controls
+  const adjustedData = controls.map((control) => {
+    const matchedOffer = offers.find(
+      (offer) => offer.client_candidate === control.client_name
+    );
+
+    if (matchedOffer) {
+      const periodMonth = new Date(matchedOffer.period_time).getMonth();
+      const months = [
+        "month_jan",
+        "month_feb",
+        "month_mar",
+        "month_apr",
+        "month_may",
+        "month_jun",
+        "month_jul",
+        "month_aug",
+        "month_sep",
+        "month_oct",
+        "month_nov",
+        "month_dec",
+      ];
+
+      months.forEach((month, index) => {
+        control[month] =
+          index >= periodMonth ? control[month] || "ON PROCESS" : "";
+      });
+    }
+
+    return control;
+  });
+
+  res.json(adjustedData);
+});
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
