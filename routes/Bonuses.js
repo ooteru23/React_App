@@ -12,34 +12,8 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const bonus = req.body;
-
-  const existingBonus = await Bonuses.findAll({
-    where: { employee_name: bonus.map((item) => item.employee_name) },
-    attributes: [
-      "employee_name",
-      "client_name",
-      "month",
-      "work_status",
-      "net_value",
-      "disbursement_bonus",
-    ],
-  }).then((data) => data.map((item) => item.employee_name));
-
-  const newObjects = bonus.filter(
-    (item) => !existingBonus.includes(item.employee_name)
-  );
-
-  const response = newObjects.length
-    ? await Bonuses.bulkCreate(newObjects)
-    : [];
-
-  res.json({
-    message: newObjects.length
-      ? "Data Saved successfully."
-      : "Data Already Exists.",
-    newData: response,
-    existingData: existingBonus,
-  });
+  await Bonuses.bulkCreate(bonus);
+  res.json(bonus);
 });
 
 module.exports = router;

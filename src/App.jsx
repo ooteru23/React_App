@@ -9,7 +9,6 @@ import Client from "./components/Client";
 import Setup from "./components/Setup";
 import EditSetup from "./components/edit/EditSetup";
 import Control from "./components/Control";
-import EditControl from "./components/edit/EditControl";
 import Bonus from "./components/Bonus";
 import Report from "./components/Report";
 
@@ -99,7 +98,6 @@ function App() {
         <Route path="/project-setup" element={<Setup />} />
         <Route path="/project-setup/edit/:id" element={<EditSetup />} />
         <Route path="/project-control" element={<Control />} />
-        <Route path="/project-control/edit/:id" element={<EditControl />} />
         <Route path="/bonus-calculation" element={<Bonus />} />
         <Route path="/bonus-report" element={<Report />} />
       </Routes>

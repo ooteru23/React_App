@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Select from "react-select";
 
@@ -10,11 +9,10 @@ function Control() {
   const [filteredControl, setFilteredControl] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState([]);
+  const [isEditing, setIsEditing] = useState(true);
   const [currentMonth] = useState(
     new Date().toLocaleString("default", { month: "long" })
   );
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const months = [
     { key: "month_jan", name: "January" },
@@ -33,11 +31,11 @@ function Control() {
 
   const options = [
     { value: "ON TIME", label: "ON TIME" },
-    { value: "Late", label: "Late" },
+    { value: "LATE", label: "LATE" },
   ];
 
   const handleSelectChange = (control, monthKey, selectedOption) => {
-    control[monthKey] = selectedOption ? selectedOption.value : "";
+    control[monthKey] = selectedOption ? selectedOption.value : "ON PROCESS";
     setFilteredControl([...filteredControl]);
   };
 
@@ -47,28 +45,35 @@ function Control() {
     );
 
     return months.slice(0, currentMonthIndex + 1).map((month) => {
-      const monthValue = control[month.key]; // Nilai bulan saat ini
+      const monthValue = control[month.key];
 
-      // Jika nilai bulan kosong, jangan tampilkan dropdown
       if (!monthValue) {
-        return <td key={month.key}></td>; // Kosongkan kolom tanpa dropdown
+        return <td key={month.key}></td>;
       }
 
-      // Tampilkan dropdown jika ada nilai
       return (
-        <td key={month.key}>
-          <Select
-            options={options}
-            value={{
-              value: control[month.key],
-              label: control[month.key],
-            }}
-            onChange={(selectedOption) =>
-              handleSelectChange(control, month.key, selectedOption)
-            }
-            placeholder="Select"
-            isClearable
-          />
+        <td key={month.key} style={{ minWidth: "110px" }}>
+          {isEditing && monthValue === "ON PROCESS" ? (
+            <Select
+              options={options}
+              value={{
+                value: control[month.key],
+                label: control[month.key],
+              }}
+              onChange={(selectedOption) =>
+                handleSelectChange(control, month.key, selectedOption)
+              }
+              placeholder="Select"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minWidth: "110px",
+                }),
+              }}
+            />
+          ) : (
+            <span>{monthValue}</span>
+          )}
         </td>
       );
     });
@@ -102,20 +107,38 @@ function Control() {
       });
   }, []);
 
-  useEffect(() => {
-    if (location.state && location.state.message) {
-      toast.success(location.state.message, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+  const handleSave = (e) => {
+    e.preventDefault();
 
-      navigate(".", { replace: true, state: {} });
-    }
-  }, [location]);
+    axios
+      .post("http://localhost:3001/controls/update-data", filteredControl)
+      .then((response) => {
+        toast.success("Data saved successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          onClose: () => window.location.reload(),
+        });
+        console.log("Data Added:", response.data);
+        setIsEditing(false);
+      })
+      .catch((error) => {
+        toast.error("Failed to save data. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        console.error("Error saving data:", error);
+      });
+  };
 
   const handleCheckData = (e) => {
     e.preventDefault();
@@ -176,7 +199,7 @@ function Control() {
           </div>
         </form>
         <br />
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -211,6 +234,13 @@ function Control() {
             </table>
           </div>
         </div>
+        <form className="row g-3" onSubmit={handleSave}>
+          <div className="col-lg-12 mt-3">
+            <button className="btn btn-success" type="submit">
+              Save
+            </button>
+          </div>
+        </form>
       </div>
     </>
   );

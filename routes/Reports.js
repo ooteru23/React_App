@@ -10,7 +10,6 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const report = req.body;
-
   await Reports.create(report);
   res.json(report);
 });

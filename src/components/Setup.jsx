@@ -134,9 +134,7 @@ function Setup() {
     axios
       .post("http://localhost:3001/controls", saveToControl)
       .then((response) => {
-        const { message, newData, existingData } = response.data;
-
-        toast.success(message, {
+        toast.success("Data Added Successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -146,9 +144,7 @@ function Setup() {
           progress: undefined,
           onClose: () => window.location.reload(),
         });
-
-        console.log("New Data Added:", newData || []);
-        console.log("Existing Data:", existingData || []);
+        console.log("Data Added:", response.data);
       })
       .catch((error) => {
         toast.error("Error Adding Data", {
