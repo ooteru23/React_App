@@ -8,10 +8,6 @@ function Client() {
   const [searchFilter, setSearchFilter] = useState("");
 
   useEffect(() => {
-    fetchClient();
-  }, []);
-
-  const fetchClient = () => {
     axios
       .get("http://localhost:3001/clients")
       .then((response) => {
@@ -20,7 +16,7 @@ function Client() {
       .catch((error) => {
         console.error("Error Getting Data:", error);
       });
-  };
+  }, []);
 
   const handleDelete = (id) => {
     axios
@@ -35,7 +31,7 @@ function Client() {
           draggable: true,
           progress: undefined,
         });
-        fetchClient();
+        setListOfClient(listOfClient.filter((client) => client.id !== id));
         console.log("Data Deleted:", response.data);
       })
       .catch((error) => {

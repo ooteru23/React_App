@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
 
-  const client = await Clients.findByPk(id);
+  const client = await Clients.findOne({ where: { id } });
   if (!client) {
     return res.status(404).json({ message: "Client not found" });
   }
