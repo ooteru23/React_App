@@ -7,8 +7,9 @@ function Control() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
+  const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
-  const [selectedEmployee, setSelectedEmployee] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState("");
   const [isEditing, setIsEditing] = useState(true);
   const [currentMonth] = useState(
     new Date().toLocaleString("default", { month: "long" })
@@ -47,18 +48,14 @@ function Control() {
     return months.slice(0, currentMonthIndex + 1).map((month) => {
       const monthValue = control[month.key];
 
-      if (!monthValue) {
-        return <td key={month.key}></td>;
-      }
-
       return (
         <td key={month.key} style={{ minWidth: "110px" }}>
           {isEditing && monthValue === "ON PROCESS" ? (
             <Select
               options={options}
               value={{
-                value: control[month.key],
-                label: control[month.key],
+                value: monthValue,
+                label: monthValue,
               }}
               onChange={(selectedOption) =>
                 handleSelectChange(control, month.key, selectedOption)
@@ -89,6 +86,10 @@ function Control() {
       .get("http://localhost:3001/employees")
       .then((response) => {
         setListOfEmployee(response.data);
+        const activeEmployees = response.data.filter(
+          (employee) => employee.status !== "Inactive"
+        );
+        setFilteredEmployee(activeEmployees);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -100,7 +101,16 @@ function Control() {
       .get("http://localhost:3001/controls/adjusted-data/")
       .then((response) => {
         setListOfControl(response.data);
-        setFilteredControl(response.data);
+        const filteredControls = response.data.filter((control) => {
+          const controlYear = new Date(control.createdAt).getFullYear();
+          const isEmployeeMatch =
+            control.employee1 === selectedEmployee ||
+            control.employee2 === selectedEmployee;
+          const isYearMatch = controlYear === currentYear;
+
+          return (!selectedEmployee || isEmployeeMatch) && isYearMatch;
+        });
+        setFilteredControl(filteredControls);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -146,11 +156,12 @@ function Control() {
     const filtered = listOfControl.filter((control) => {
       const controlYear = new Date(control.createdAt).getFullYear();
       const isEmployeeMatch =
+        !selectedEmployee ||
         control.employee1 === selectedEmployee ||
         control.employee2 === selectedEmployee;
-      const isYearMatch = controlYear === currentYear;
+      const isYearMatch = controlYear === parseInt(currentYear, 10);
 
-      return (!selectedEmployee || isEmployeeMatch) && isYearMatch;
+      return isEmployeeMatch && isYearMatch;
     });
 
     setFilteredControl(filtered);
@@ -175,7 +186,7 @@ function Control() {
               required
             >
               <option hidden>---Please Choose Options---</option>
-              {listOfEmployee.map((employee) => (
+              {filteredEmployee.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}
                 </option>
@@ -188,7 +199,7 @@ function Control() {
               type="text"
               className="form-control"
               value={currentYear}
-              disabled
+              onChange={(e) => setCurrentYear(e.target.value)}
             />
           </div>
           <div className="col-lg-12 mt-3">
