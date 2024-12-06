@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-import moment from "moment";
 
 function Client() {
   const [listOfClient, setListOfClient] = useState([]);
   const [searchFilter, setSearchFilter] = useState("");
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { day: "numeric", month: "long", year: "numeric" };
+    return date.toLocaleDateString(undefined, options);
+  };
 
   useEffect(() => {
     axios
@@ -48,18 +53,12 @@ function Client() {
       });
   };
 
-  const formatDate = (dateString) => {
-    return moment(dateString).format("MMMM DD, YYYY");
-  };
-
   const handleSearchChange = (e) => {
     setSearchFilter(e.target.value);
   };
 
   const filteredClient = listOfClient.filter((client) => {
-    const formattedValidDate = moment(client.valid_date).format(
-      "MMMM DD, YYYY"
-    );
+    const formattedValidDate = formatDate(client.createdAt);
 
     return (
       client.client_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -89,10 +88,10 @@ function Client() {
           />
         </form>
 
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
-              <thead>
+              <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
@@ -105,7 +104,7 @@ function Client() {
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-center align-middle">
                 {filteredClient.map((client, index) => {
                   return (
                     <tr key={client.id}>

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import moment from "moment";
 
 function Offer() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -23,6 +22,18 @@ function Offer() {
   const [searchFilter, setSearchFilter] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { day: "numeric", month: "long", year: "numeric" };
+    return date.toLocaleDateString(undefined, options);
+  };
+
+  const formatPeriodTime = (dateString) => {
+    const date = new Date(dateString);
+    const options = { month: "long", year: "numeric" };
+    return date.toLocaleDateString(undefined, options);
+  };
 
   useEffect(() => {
     axios
@@ -144,25 +155,15 @@ function Offer() {
     navigate(`/offer/edit/${id}`);
   };
 
-  const formatDate = (dateString) => {
-    return moment(dateString).format("MMMM DD, YYYY");
-  };
-
-  const formatPeriodTime = (dateString) => {
-    return moment(dateString).format("MMMM YYYY");
-  };
-
   const handleSearchChange = (e) => {
     setSearchFilter(e.target.value);
   };
 
   const filteredOffer = listOfOffer
     .filter((offer) => {
-      const formattedDate = moment(offer.date).format("MMMM DD, YYYY");
-      const formattedValidDate = moment(offer.valid_date).format(
-        "MMMM DD, YYYY"
-      );
-      const formattedPeriodTime = moment(offer.period_time).format("MMMM YYYY");
+      const formattedDate = formatDate(offer.date);
+      const formattedValidDate = formatDate(offer.valid_date);
+      const formattedPeriodTime = formatPeriodTime(offer.period_time);
 
       return (
         offer.creator_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -373,10 +374,10 @@ function Offer() {
           />
         </form>
 
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
-              <thead class="text-center align-middle">
+              <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Kreator</th>
@@ -395,7 +396,7 @@ function Offer() {
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody class="text-center align-middle">
+              <tbody className="text-center align-middle">
                 {filteredOffer.map((offer, index) => {
                   return (
                     <tr key={offer.id}>
