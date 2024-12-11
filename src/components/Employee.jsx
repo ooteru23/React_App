@@ -131,11 +131,11 @@ function Employee() {
     });
 
   const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const handleChange = (e) => {
-    const input = e.target.value.replace(/,/g, "");
+    const input = e.target.value.replace(/\./g, "");
     const formattedNumber = formatNumber(input);
     setSalary(formattedNumber);
   };
@@ -175,7 +175,9 @@ function Employee() {
               onChange={(e) => setStatus(e.target.value)}
               required
             >
-              <option hidden>--Please Choose Option--</option>
+              <option value="" hidden>
+                --Please Choose Option--
+              </option>
               <option>Full Time</option>
               <option>Contract</option>
               <option>Internship</option>
@@ -213,10 +215,10 @@ function Employee() {
           />
         </form>
 
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
-              <thead>
+              <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
                   <th>Nama</th>
@@ -226,7 +228,7 @@ function Employee() {
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-center align-middle">
                 {filteredEmployee.map((employee, index) => {
                   return (
                     <tr key={employee.id}>

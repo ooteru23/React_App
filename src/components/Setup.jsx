@@ -249,7 +249,7 @@ function Setup() {
   );
 
   const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const calculateNetValue1 = (
@@ -258,9 +258,11 @@ function Setup() {
     softwarePrice,
     percent1
   ) => {
-    const parsedContractValue = parseFloat(contractValue.replace(/,/g, ""));
-    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/,/g, ""));
-    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/,/g, ""));
+    const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
+    const parsedCommissionPrice = parseFloat(
+      commissionPrice.replace(/\./g, "")
+    );
+    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
     const parsedPercent1 = parseFloat(percent1) / 100;
 
     const result =
@@ -275,9 +277,11 @@ function Setup() {
     softwarePrice,
     percent2
   ) => {
-    const parsedContractValue = parseFloat(contractValue.replace(/,/g, ""));
-    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/,/g, ""));
-    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/,/g, ""));
+    const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
+    const parsedCommissionPrice = parseFloat(
+      commissionPrice.replace(/\./g, "")
+    );
+    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
     const parsedPercent2 = parseFloat(percent2) / 100;
 
     const result =
@@ -288,7 +292,7 @@ function Setup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const input = value.replace(/,/g, "");
+    const input = value.replace(/\./g, "");
     const formattedNumber = formatNumber(input);
 
     switch (name) {
@@ -416,7 +420,9 @@ function Setup() {
               onChange={handleClientChange}
               required
             >
-              <option hidden>---Please Choose Options---</option>
+              <option value="" hidden>
+                ---Please Choose Options---
+              </option>
               {availableClient.map((client) => (
                 <option key={client.id} value={client.client_name}>
                   {client.client_name}
@@ -469,7 +475,9 @@ function Setup() {
               value={employee1}
               onChange={handleEmployee1Change}
             >
-              <option hidden>---Please Choose Option---</option>
+              <option value="" hidden>
+                ---Please Choose Option---
+              </option>
               {filteredEmployee1.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}
@@ -484,7 +492,9 @@ function Setup() {
               value={employee2}
               onChange={handleEmployee2Change}
             >
-              <option hidden>---Please Choose Option---</option>
+              <option value="" hidden>
+                ---Please Choose Option---
+              </option>
               {filteredEmployee2.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}
@@ -562,7 +572,7 @@ function Setup() {
           />
         </form>
 
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col 12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">

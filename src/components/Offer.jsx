@@ -204,11 +204,11 @@ function Offer() {
     });
 
   const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const handleChange = (e) => {
-    const input = e.target.value.replace(/,/g, "");
+    const input = e.target.value.replace(/\./g, "");
     const formattedNumber = formatNumber(input);
     setPrice(formattedNumber);
   };
@@ -226,7 +226,9 @@ function Offer() {
               onChange={(e) => setCreatorName(e.target.value)}
               required
             >
-              <option hidden>--Please Choose Options--</option>
+              <option value="" hidden>
+                --Please Choose Options--
+              </option>
               {filteredEmployee.map((employee) => (
                 <option key={employee.id}>{employee.name}</option>
               ))}
