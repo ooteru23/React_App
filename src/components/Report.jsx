@@ -83,7 +83,9 @@ function Report() {
               onChange={handleMonthChange}
               required
             >
-              <option hidden>---Please Choose Options---</option>
+              <option value="" hidden>
+                ---Please Choose Options---
+              </option>
               {Object.keys(monthMapping).map((month) => (
                 <option key={month}>{month}</option>
               ))}
@@ -105,7 +107,7 @@ function Report() {
           </div>
         </form>
         <br />
-        <div className="row mt-3" hidden={!showTable}>
+        <div className="row mt-3 table-responsive" hidden={!showTable}>
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">

@@ -94,11 +94,11 @@ function EditOffer() {
   };
 
   const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const handleChange = (e) => {
-    const input = e.target.value.replace(/,/g, "");
+    const input = e.target.value.replace(/\./g, "");
     const formattedNumber = formatNumber(input);
     setPrice(formattedNumber);
   };

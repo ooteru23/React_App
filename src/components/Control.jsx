@@ -101,16 +101,15 @@ function Control() {
       .get("http://localhost:3001/controls/adjusted-data/")
       .then((response) => {
         setListOfControl(response.data);
-        const filteredControls = response.data.filter((control) => {
+        const filteredControl = response.data.filter((control) => {
           const controlYear = new Date(control.createdAt).getFullYear();
           const isEmployeeMatch =
             control.employee1 === selectedEmployee ||
             control.employee2 === selectedEmployee;
           const isYearMatch = controlYear === currentYear;
-
           return (!selectedEmployee || isEmployeeMatch) && isYearMatch;
         });
-        setFilteredControl(filteredControls);
+        setFilteredControl(filteredControl);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -185,7 +184,9 @@ function Control() {
               onChange={handleEmployeeChange}
               required
             >
-              <option hidden>---Please Choose Options---</option>
+              <option value="" hidden>
+                ---Please Choose Options---
+              </option>
               {filteredEmployee.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}
