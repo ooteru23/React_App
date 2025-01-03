@@ -2,14 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function Report() {
-  const [currentYear] = useState(new Date().getFullYear());
-  const [currentMonth] = useState(
-    new Date().toLocaleString("en-US", { month: "long" })
-  );
+  const [currentYear, setCurrentYear] = useState([]);
   const [listOfReport, setListOfReport] = useState([]);
-  const [filteredReport, setFilteredReport] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [showTable, setShowTable] = useState(false);
 
   const monthMapping = {
     January: "jan",
@@ -27,6 +22,22 @@ function Report() {
   };
 
   useEffect(() => {
+    const year = new Date().getFullYear();
+    setCurrentYear(year);
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/bonuses")
+      .then((response) => {
+        setListOfBonus(response.data);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
     axios
       .get("http://localhost:3001/reports")
       .then((response) => {
@@ -35,39 +46,10 @@ function Report() {
       .catch((error) => {
         console.error("Error Getting Data:", error);
       });
-  }, [currentYear]);
-
-  const handleMonthChange = (e) => {
-    setSelectedMonth(e.target.value);
-    setShowTable(false);
-  };
+  }, []);
 
   const handleViewReport = (e) => {
     e.preventDefault();
-
-    const filteredByYear = listOfReport.filter(
-      (report) => new Date(report.createdAt).getFullYear() === currentYear
-    );
-
-    if (selectedMonth === currentMonth) {
-      const filteredByMonth = filteredByYear.filter(
-        (report) => report.month === monthMapping[selectedMonth]
-      );
-      setFilteredReport(filteredByMonth);
-      setShowTable(true);
-    } else {
-      setFilteredReport([]);
-      setShowTable(false);
-    }
-
-    const reportTotal = filteredByYear.map((report) => ({
-      ...report,
-      totalBonus: (
-        (parseInt(report.bonus_ontime.replace(/,/g, "")) || 0) +
-        (parseInt(report.bonus_late.replace(/,/g, "")) || 0)
-      ).toLocaleString("en-US"),
-    }));
-    setFilteredReport(reportTotal);
   };
 
   return (
@@ -80,7 +62,7 @@ function Report() {
             <select
               className="form-select"
               value={selectedMonth}
-              onChange={handleMonthChange}
+              onChange={(e) => setSelectedMonth(e.target.value)}
               required
             >
               <option value="" hidden>
@@ -97,7 +79,7 @@ function Report() {
               type="text"
               className="form-control"
               value={currentYear}
-              disabled
+              onChange={(e) => setCurrentYear(e.target.value)}
             />
           </div>
           <div className="col-lg-12 mt-3">
@@ -107,7 +89,7 @@ function Report() {
           </div>
         </form>
         <br />
-        <div className="row mt-3 table-responsive" hidden={!showTable}>
+        <div className="row mt-3 table-responsive" hidden>
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -133,22 +115,40 @@ function Report() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {filteredReport.map((report, index) => {
+                {listOfReport.map((report, index) => {
                   return (
                     <tr key={report.id}>
                       <td>{index + 1}</td>
                       <td>{report.employee_name}</td>
-                      <td>{report.salary_deduction}</td>
-                      <td>{report.month_ontime}</td>
-                      <td>{report.month_late}</td>
-                      <td>{report.bonus_component}</td>
-                      <td>{report.percent_ontime}</td>
-                      <td>{report.percent_late}</td>
-                      <td>{report.total_ontime}</td>
-                      <td>{report.total_late}</td>
-                      <td>{report.bonus_ontime}</td>
-                      <td>{report.bonus_late}</td>
-                      <td>{report.totalBonus}</td>
+                      <td>
+                        {Number(report.salary_deduction).toLocaleString(
+                          "id-ID"
+                        )}
+                      </td>
+                      <td>
+                        {Number(report.month_ontime).toLocaleString("id-ID")}
+                      </td>
+                      <td>
+                        {Number(report.month_late).toLocaleString("id-ID")}
+                      </td>
+                      <td>
+                        {Number(report.bonus_component).toLocaleString("id-ID")}
+                      </td>
+                      <td>{report.percent_ontime}%</td>
+                      <td>{report.percent_late}%</td>
+                      <td>
+                        {Number(report.total_ontime).toLocaleString("id-ID")}
+                      </td>
+                      <td>
+                        {Number(report.total_late).toLocaleString("id-ID")}
+                      </td>
+                      <td>
+                        {Number(report.bonus_ontime).toLocaleString("id-ID")}
+                      </td>
+                      <td>
+                        {Number(report.bonus_late).toLocaleString("id-ID")}
+                      </td>
+                      <td>{Number(report.total).toLocaleString("id-ID")}</td>
                     </tr>
                   );
                 })}

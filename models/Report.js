@@ -48,6 +48,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    total: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
 
   return Reports;

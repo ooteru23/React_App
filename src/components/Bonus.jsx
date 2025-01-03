@@ -7,11 +7,22 @@ function Bonus() {
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfBonus, setListOfBonus] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
-  const [currentYear] = useState(new Date().getFullYear());
+  const [currentYear, setCurrentYear] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [bonusTableData, setBonusTableData] = useState([]);
-  const [salaryDeduction, setSalaryDeduction] = useState("");
+  const [salaryDeduction, setSalaryDeduction] = useState(0);
+  const [onTime, setOnTime] = useState(0);
+  const [late, setLate] = useState(0);
+  const [totalValue, setTotalValue] = useState(0);
+  const [bonusComponent, setBonusComponent] = useState(0);
+  const [percentOnTime, setPercentOnTime] = useState(0);
+  const [totalOnTime, setTotalOnTime] = useState(0);
+  const [percentLate, setPercentLate] = useState(0);
+  const [totalLate, setTotalLate] = useState(0);
+  const [bonusOnTime, setBonusOnTime] = useState(0);
+  const [bonusLate, setBonusLate] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const monthMapping = {
     January: "jan",
@@ -27,6 +38,11 @@ function Bonus() {
     November: "nov",
     December: "dec",
   };
+
+  useEffect(() => {
+    const year = new Date().getFullYear();
+    setCurrentYear(year);
+  }, []);
 
   useEffect(() => {
     axios
@@ -75,6 +91,16 @@ function Bonus() {
       work_status: data.status,
       net_value: data.netValue,
       disbursement_bonus: "Paid",
+      salary_deduction: salaryDeduction,
+      month_ontime: onTime,
+      month_late: late,
+      bonus_component: bonusComponent,
+      percent_ontime: percentOnTime,
+      percent_late: percentLate,
+      total_ontime: totalOnTime,
+      total_late: totalLate,
+      bonus_ontime: bonusOnTime,
+      bonus_late: bonusLate,
     }));
 
     axios
@@ -102,6 +128,31 @@ function Bonus() {
           draggable: true,
           progress: undefined,
         });
+        console.error("Error Saving Data", error);
+      });
+
+    const addToReport = bonusTableData.map((data) => ({
+      employee_name: data.employee,
+      month: data.month,
+      salary_deduction: salaryDeduction,
+      month_ontime: onTime,
+      month_late: late,
+      bonus_component: bonusComponent,
+      percent_ontime: percentOnTime,
+      percent_late: percentLate,
+      total_ontime: totalOnTime,
+      total_late: totalLate,
+      bonus_ontime: bonusOnTime,
+      bonus_late: bonusLate,
+      total: total,
+    }));
+
+    axios
+      .post("http://localhost:3001/reports", addToReport)
+      .then((response) => {
+        console.log("Data Added:", response.data);
+      })
+      .catch(() => {
         console.error("Error Saving Data", error);
       });
   };
@@ -194,9 +245,54 @@ function Bonus() {
         }))
       );
     }
+    let onTimeValue = 0;
+    let lateValue = 0;
+    allData.forEach((data) => {
+      const numericValue = Number(data.netValue.replace(/\./g, ""));
+      if (data.status === "ON TIME") {
+        onTimeValue += numericValue;
+      } else if (data.status === "LATE") {
+        lateValue += numericValue;
+      }
+    });
+    setOnTime(onTimeValue);
+    setLate(lateValue);
+
+    const totalValue = onTimeValue + lateValue;
+    setTotalValue(totalValue);
+
+    const bonusComponent =
+      salaryDeduction !== 0 ? totalValue - salaryDeduction : 0;
+    setBonusComponent(bonusComponent);
+
+    const percentageOnTime = (onTimeValue / totalValue) * 100;
+    setPercentOnTime(percentageOnTime);
+
+    const totalOnTime = (percentageOnTime / 100) * bonusComponent;
+    setTotalOnTime(totalOnTime);
+
+    const percentageLate = (lateValue / totalValue) * 100;
+    setPercentLate(percentageLate);
+
+    const totalLate = (percentageLate / 100) * bonusComponent;
+    setTotalLate(totalLate);
+
+    const bonusOnTime = (totalOnTime / 100) * 15;
+    setBonusOnTime(bonusOnTime);
+
+    const bonusLate = (totalLate / 100) * 10;
+    setBonusLate(bonusLate);
+
+    const total = bonusOnTime + bonusLate;
+    setTotal(total);
   };
 
   const tableData = bonusTableData;
+
+  const handleSalaryDeductionChange = (e) => {
+    const numericValue = e.target.value.replace(/\./g, "");
+    setSalaryDeduction(numericValue);
+  };
 
   return (
     <>
@@ -227,7 +323,7 @@ function Bonus() {
               type="text"
               className="form-control"
               value={currentYear}
-              disabled
+              onChange={(e) => setCurrentYear(e.target.value)}
             />
           </div>
           <div className="form-group col-md-6 mt-1">
@@ -259,7 +355,7 @@ function Bonus() {
               <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
-                  <th>Nama Karyawan</th>
+                  <th hidden>Nama Karyawan</th>
                   <th>Nama Klien</th>
                   <th>Bulan</th>
                   <th>Status Pekerjaan</th>
@@ -271,7 +367,7 @@ function Bonus() {
                 {tableData.map((data, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{data.employee}</td>
+                    <td hidden>{data.employee}</td>
                     <td>{data.clientName}</td>
                     <td>{data.month}</td>
                     <td>{data.status}</td>
@@ -287,16 +383,31 @@ function Bonus() {
         <div className="container mt-3">
           <form className="row g-3" onSubmit={handleAddBonus}>
             <div className="form-group col-md-6 mt-1">
-              <label htmlFor="ontime"> Bulan On Time : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label htmlFor="ontime"> Bulan ON TIME : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={onTime.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label htmlFor="late"> Bulan Late : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label htmlFor="late"> Bulan LATE : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={late.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
               <label htmlFor="total_value"> Total Nilai : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <input
+                type="text"
+                className="form-control w-50"
+                value={totalValue.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
               <label htmlFor="salary_deduction">
@@ -305,8 +416,8 @@ function Bonus() {
               <input
                 type="text"
                 className="form-control w-50"
-                value={salaryDeduction.toLocaleString("id-ID")}
-                onChange={(e) => setSalaryDeduction(e.target.value)}
+                value={Number(salaryDeduction).toLocaleString("id-ID")}
+                onChange={handleSalaryDeductionChange}
               />
             </div>
             <div className="form-group col-md-6 mt-3">
@@ -315,30 +426,53 @@ function Bonus() {
             </div>
             <div className="form-group col-md-6 mt-3">
               <label htmlFor="component_bonus"> Bonus Komponen : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <input
+                type="text"
+                className="form-control w-50"
+                value={bonusComponent.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label>Total OnTime : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label className="percentOnTime">
+                Persentase Total ON TIME :
+              </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={percentOnTime + "%"}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label>Persentase Total OnTime : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label>Total ON TIME : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={totalOnTime.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label> Total Late : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label> Persentase Total LATE : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={percentLate + "%"}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label> Persentase Total Late : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label> Total LATE : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={totalLate.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label> Bonus OnTime : </label>
-              <input type="text" className="form-control w-50" disabled />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Persentase Bonus OnTime : </label>
+              <label> Persentase Bonus ON TIME : </label>
               <input
                 type="text"
                 className="form-control w-50"
@@ -347,8 +481,13 @@ function Bonus() {
               />
             </div>
             <div className="form-group col-md-6 mt-3">
-              <label> Bonus Late : </label>
-              <input type="text" className="form-control w-50" disabled />
+              <label> Bonus ON TIME : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={bonusOnTime.toLocaleString("id-ID")}
+                disabled
+              />
             </div>
             <div className="form-group col-md-6 mt-3">
               <label> Persentase Bonus Late : </label>
@@ -356,6 +495,24 @@ function Bonus() {
                 type="text"
                 className="form-control w-50"
                 value={"10%"}
+                disabled
+              />
+            </div>
+            <div className="form-group col-md-6 mt-3">
+              <label> Bonus Late : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={bonusLate.toLocaleString("id-ID")}
+                disabled
+              />
+            </div>
+            <div className="form-group col-md-6 mt-3" hidden>
+              <label> Total : </label>
+              <input
+                type="text"
+                className="form-control w-50"
+                value={total.toLocaleString("id-ID")}
                 disabled
               />
             </div>

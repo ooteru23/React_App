@@ -101,15 +101,6 @@ function Control() {
       .get("http://localhost:3001/controls/adjusted-data/")
       .then((response) => {
         setListOfControl(response.data);
-        const filteredControl = response.data.filter((control) => {
-          const controlYear = new Date(control.createdAt).getFullYear();
-          const isEmployeeMatch =
-            control.employee1 === selectedEmployee ||
-            control.employee2 === selectedEmployee;
-          const isYearMatch = controlYear === currentYear;
-          return (!selectedEmployee || isEmployeeMatch) && isYearMatch;
-        });
-        setFilteredControl(filteredControl);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
