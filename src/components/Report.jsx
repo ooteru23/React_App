@@ -5,6 +5,8 @@ function Report() {
   const [currentYear, setCurrentYear] = useState([]);
   const [listOfReport, setListOfReport] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [showTable, setShowTable] = useState(false);
+  const [filteredReport, setFilteredReport] = useState([]);
 
   const monthMapping = {
     January: "jan",
@@ -28,17 +30,6 @@ function Report() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/bonuses")
-      .then((response) => {
-        setListOfBonus(response.data);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
       .get("http://localhost:3001/reports")
       .then((response) => {
         setListOfReport(response.data);
@@ -50,6 +41,14 @@ function Report() {
 
   const handleViewReport = (e) => {
     e.preventDefault();
+    const filtered = listOfReport.filter((report) => {
+      const reportYear = new Date(report.createdAt).getFullYear();
+      return (
+        report.month === selectedMonth && reportYear === Number(currentYear, 10)
+      );
+    });
+    setFilteredReport(filtered);
+    setShowTable(true);
   };
 
   return (
@@ -89,7 +88,7 @@ function Report() {
           </div>
         </form>
         <br />
-        <div className="row mt-3 table-responsive" hidden>
+        <div className="row mt-3 table-responsive" hidden={!showTable}>
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -115,7 +114,7 @@ function Report() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {listOfReport.map((report, index) => {
+                {filteredReport.map((report, index) => {
                   return (
                     <tr key={report.id}>
                       <td>{index + 1}</td>
