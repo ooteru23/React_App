@@ -134,7 +134,7 @@ function Setup() {
     axios
       .post("http://localhost:3001/controls", saveToControl)
       .then((response) => {
-        toast.success("Data Added Successfully!", {
+        toast.success("Data Saved Successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,

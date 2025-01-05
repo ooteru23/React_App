@@ -59,6 +59,8 @@ function Bonus() {
       });
   }, []);
 
+  
+
   useEffect(() => {
     axios
       .get("http://localhost:3001/controls")
@@ -160,6 +162,11 @@ function Bonus() {
   const handleCalculate = (e) => {
     e.preventDefault();
 
+    const filteredListOfBonus = listOfBonus.filter((bonus) =>{
+      const bonusYear = new Date(bonus.createdAt).getFullYear()
+      return bonusYear === Number(currentYear, 10) 
+    })
+
     const isValidMonth = listOfControl.some((control) => {
       const monthColumnKey = `month_${monthMapping[selectedMonth]}`;
       const status = control[monthColumnKey];
@@ -216,7 +223,7 @@ function Bonus() {
 
     const unmatchedData = allData.filter(
       (data) =>
-        !listOfBonus.some(
+        !filteredListOfBonus.some(
           (bonus) =>
             bonus.client_name === data.clientName &&
             bonus.month === data.month &&
@@ -224,7 +231,7 @@ function Bonus() {
         )
     );
 
-    const filteredBonusData = listOfBonus.filter(
+    const filteredBonusData = filteredListOfBonus.filter(
       (bonus) =>
         bonus.employee_name === selectedEmployee &&
         bonus.month === selectedMonth &&
@@ -235,7 +242,7 @@ function Bonus() {
       setBonusTableData(unmatchedData);
     } else {
       setBonusTableData(
-        listOfBonus.map((bonus) => ({
+        filteredListOfBonus.map((bonus) => ({
           clientName: bonus.client_name,
           employee: bonus.employee_name,
           month: bonus.month,

@@ -149,7 +149,7 @@ function Control() {
         !selectedEmployee ||
         control.employee1 === selectedEmployee ||
         control.employee2 === selectedEmployee;
-      const isYearMatch = controlYear === parseInt(currentYear, 10);
+      const isYearMatch = controlYear === Number(currentYear, 10);
 
       return isEmployeeMatch && isYearMatch;
     });

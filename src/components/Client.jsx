@@ -118,11 +118,11 @@ function Client() {
                       <td>{formatDate(client.createdAt)}</td>
                       <td>
                         <button
-                          className="btn btn-danger"
-                          onClick={() => handleDelete(client.id)}
+                          className="btn btn-primary"
                         >
-                          Delete
+                          Active
                         </button>
+                        <button className="btn btn-danger">Inactive</button>
                       </td>
                     </tr>
                   );
