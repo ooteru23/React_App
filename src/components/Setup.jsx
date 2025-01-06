@@ -132,7 +132,7 @@ function Setup() {
     }));
 
     axios
-      .post("http://localhost:3001/controls", saveToControl)
+      .post("http://localhost:3001/controls/creating-data", saveToControl)
       .then((response) => {
         toast.success("Data Saved Successfully!", {
           position: "top-right",

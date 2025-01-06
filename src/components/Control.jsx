@@ -209,6 +209,8 @@ function Control() {
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
+                  <th>Employee1</th>
+                  <th>Employee2</th>
                   <th>January</th>
                   <th>February</th>
                   <th>March</th>
@@ -229,6 +231,8 @@ function Control() {
                     <tr key={control.id}>
                       <td>{index + 1}</td>
                       <td>{control.client_name}</td>
+                      <td>{control.employee1}</td>
+                      <td>{control.employee2}</td>
                       {renderMonthDropdowns(control)}
                     </tr>
                   );

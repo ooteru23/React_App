@@ -122,7 +122,7 @@ function EditSetup() {
   );
 
   const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+   return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const calculateNetValue1 = (
@@ -131,9 +131,9 @@ function EditSetup() {
     softwarePrice,
     percent1
   ) => {
-    const parsedContractValue = parseFloat(contractValue.replace(/,/g, ""));
-    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/,/g, ""));
-    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/,/g, ""));
+    const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
+    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/\./g, ""));
+    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
     const parsedPercent1 = parseFloat(percent1) / 100;
 
     const result =
@@ -148,9 +148,9 @@ function EditSetup() {
     softwarePrice,
     percent2
   ) => {
-    const parsedContractValue = parseFloat(contractValue.replace(/,/g, ""));
-    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/,/g, ""));
-    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/,/g, ""));
+    const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
+    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/\./g, ""));
+    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
     const parsedPercent2 = parseFloat(percent2) / 100;
 
     const result =
@@ -161,7 +161,7 @@ function EditSetup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const input = value.replace(/,/g, "");
+    const input = value.replace(/\./g, "");
     const formattedNumber = formatNumber(input);
 
     switch (name) {

@@ -53,6 +53,21 @@ router.post("/", async (req, res) => {
   res.json(control);
 });
 
+router.post("/creating-data", async (req, res) => {
+  const control = req.body;
+  await Controls.bulkCreate(control, {
+    ignoreDuplicates: true,
+    updateOnDuplicate: [
+      "client_name",
+      "employee1",
+      "employee2",
+      "net_value1",
+      "net_value2",
+    ],
+  });
+  res.json(control);
+});
+
 router.post("/update-data", async (req, res) => {
   const controls = req.body;
 

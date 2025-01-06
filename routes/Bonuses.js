@@ -9,7 +9,7 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const bonus = req.body;
-  await Bonuses.bulkCreate(bonus);
+  await Bonuses.bulkCreate(bonus, { ignoreDuplicates: true });
   res.json(bonus);
 });
 
