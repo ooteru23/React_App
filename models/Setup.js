@@ -42,13 +42,5 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  Setups.associate = (models) => {
-    Setups.belongsTo(models.Clients, {
-      foreignKey: "client_candidate",
-      targetKey: "client_name",
-      onDelete: "CASCADE",
-    });
-  };
-
   return Setups;
 };

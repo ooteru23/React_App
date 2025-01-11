@@ -59,8 +59,6 @@ function Bonus() {
       });
   }, []);
 
-  
-
   useEffect(() => {
     axios
       .get("http://localhost:3001/controls")
@@ -85,6 +83,29 @@ function Bonus() {
 
   const handleAddBonus = (e) => {
     e.preventDefault();
+
+    const isAnyDataPaid = bonusTableData.some((data) =>
+      listOfBonus.some(
+        (bonus) =>
+          bonus.client_name === data.clientName &&
+          bonus.employee_name === data.employee &&
+          bonus.month === data.month &&
+          bonus.disbursement_bonus === "Paid"
+      )
+    );
+
+    if (isAnyDataPaid) {
+      toast.error("Data Already Saved", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
 
     const addToBonus = bonusTableData.map((data) => ({
       employee_name: data.employee,
@@ -162,10 +183,10 @@ function Bonus() {
   const handleCalculate = (e) => {
     e.preventDefault();
 
-    const filteredListOfBonus = listOfBonus.filter((bonus) =>{
-      const bonusYear = new Date(bonus.createdAt).getFullYear()
-      return bonusYear === Number(currentYear, 10) 
-    })
+    const filteredListOfBonus = listOfBonus.filter((bonus) => {
+      const bonusYear = new Date(bonus.createdAt).getFullYear();
+      return bonusYear === Number(currentYear, 10);
+    });
 
     const isValidMonth = listOfControl.some((control) => {
       const monthColumnKey = `month_${monthMapping[selectedMonth]}`;
@@ -188,8 +209,12 @@ function Bonus() {
       toast.error("Tidak ada Nama Karyawan yang cocok.");
       return;
     }
-
     const allData = listOfControl.flatMap((control) => {
+      const controlYear = new Date(control.createdAt).getFullYear();
+      if (controlYear !== currentYear) {
+        return [];
+      }
+
       return Object.keys(monthMapping).flatMap((month) => {
         const monthColumnKey = `month_${monthMapping[month]}`;
         const status = control[monthColumnKey];
@@ -255,11 +280,20 @@ function Bonus() {
     let onTimeValue = 0;
     let lateValue = 0;
     allData.forEach((data) => {
-      const numericValue = Number(data.netValue.replace(/\./g, ""));
-      if (data.status === "ON TIME") {
-        onTimeValue += numericValue;
-      } else if (data.status === "LATE") {
-        lateValue += numericValue;
+      const isPaid = listOfBonus.some(
+        (bonus) =>
+          bonus.client_name === data.clientName &&
+          bonus.employee_name === data.employee &&
+          bonus.month === data.month &&
+          bonus.disbursement_bonus === "Paid"
+      );
+      if (!isPaid) {
+        const numericValue = Number(data.netValue.replace(/\./g, ""));
+        if (data.status === "ON TIME") {
+          onTimeValue += numericValue;
+        } else if (data.status === "LATE") {
+          lateValue += numericValue;
+        }
       }
     });
     setOnTime(onTimeValue);
@@ -273,15 +307,15 @@ function Bonus() {
     setBonusComponent(bonusComponent);
 
     const percentageOnTime = (onTimeValue / totalValue) * 100;
-    setPercentOnTime(percentageOnTime);
+    setPercentOnTime(Math.round(percentageOnTime));
 
-    const totalOnTime = (percentageOnTime / 100) * bonusComponent;
+    const totalOnTime = (Math.round(percentageOnTime) / 100) * bonusComponent;
     setTotalOnTime(totalOnTime);
 
     const percentageLate = (lateValue / totalValue) * 100;
-    setPercentLate(percentageLate);
+    setPercentLate(Math.round(percentageLate));
 
-    const totalLate = (percentageLate / 100) * bonusComponent;
+    const totalLate = (Math.round(percentageLate) / 100) * bonusComponent;
     setTotalLate(totalLate);
 
     const bonusOnTime = (totalOnTime / 100) * 15;

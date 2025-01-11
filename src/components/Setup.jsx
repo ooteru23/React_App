@@ -40,7 +40,7 @@ function Setup() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/clients")
+      .get("http://localhost:3001/clients/")
       .then((response) => {
         setListOfClient(response.data);
       })
@@ -51,7 +51,7 @@ function Setup() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/setups")
+      .get("http://localhost:3001/setups/")
       .then((response) => {
         setListOfSetup(response.data);
         setAddedClient(response.data.map((setup) => setup.client_candidate));
@@ -200,23 +200,34 @@ function Setup() {
     setSearchFilter(e.target.value);
   };
 
-  const filteredSetup = listOfSetup.filter(
-    (setup) =>
-      setup.client_candidate
-        .toLowerCase()
-        .includes(searchFilter.toLowerCase()) ||
-      setup.contract_value.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.commission_price
-        .toLowerCase()
-        .includes(searchFilter.toLowerCase()) ||
-      setup.software_price.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.employee1.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.percent1.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.employee2.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.percent2.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.net_value1.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      setup.net_value2.toLowerCase().includes(searchFilter.toLowerCase())
-  );
+  const filteredSetup = listOfSetup
+    .filter((setup) => {
+      const client = listOfClient.find(
+        (client) => client.client_name === setup.client_candidate
+      );
+      return client && client.client_status === "Active";
+    })
+    .filter(
+      (setup) =>
+        setup.client_candidate
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        setup.contract_value
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        setup.commission_price
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        setup.software_price
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        setup.employee1.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        setup.percent1.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        setup.employee2.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        setup.percent2.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        setup.net_value1.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        setup.net_value2.toLowerCase().includes(searchFilter.toLowerCase())
+    );
 
   const availableClient = listOfClient.filter(
     (client) => !addedClient.includes(client.client_name)

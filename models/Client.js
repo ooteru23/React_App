@@ -28,20 +28,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    client_status: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
-
-  Clients.associate = (models) => {
-    Clients.hasMany(models.Setups, {
-      foreignKey: "client_candidate",
-      sourceKey: "client_name",
-      onDelete: "CASCADE",
-    });
-    Clients.hasMany(models.Controls, {
-      foreignKey: "client_name",
-      sourceKey: "client_name",
-      onDelete: "CASCADE",
-    });
-  };
 
   return Clients;
 };

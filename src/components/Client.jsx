@@ -14,7 +14,7 @@ function Client() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/clients")
+      .get("http://localhost:3001/clients/")
       .then((response) => {
         setListOfClient(response.data);
       })
@@ -23,33 +23,21 @@ function Client() {
       });
   }, []);
 
-  const handleDelete = (id) => {
+  const handleActiveAndInactive = (id, newStatus) => {
     axios
-      .delete(`http://localhost:3001/clients/${id}`)
-      .then((response) => {
-        toast.success("Data Deleted Successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        setListOfClient(listOfClient.filter((client) => client.id !== id));
-        console.log("Data Deleted:", response.data);
+      .put(`http://localhost:3001/clients/${id}`, {
+        client_status: newStatus,
       })
-      .catch((error) => {
-        toast.error("Error Deleting Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Deleting Data:", error);
+      .then(() => {
+        setListOfClient((prevClients) =>
+          prevClients.map((client) =>
+            client.id === id ? { ...client, client_status: newStatus } : client
+          )
+        );
+        console.log("Client Status Updated!");
+      })
+      .catch((err) => {
+        console.error("Error Updating Client Status", err);
       });
   };
 
@@ -75,8 +63,8 @@ function Client() {
 
   return (
     <>
-      <div class="container">
-        <h3 class="text-center mt-3 mb-5">Tabel Klien</h3>
+      <div className="container">
+        <h3 className="text-center mt-3 mb-5">Tabel Klien</h3>
         <form>
           <input
             type="text"
@@ -119,10 +107,20 @@ function Client() {
                       <td>
                         <button
                           className="btn btn-primary"
+                          onClick={() =>
+                            handleActiveAndInactive(client.id, "Active")
+                          }
                         >
                           Active
                         </button>
-                        <button className="btn btn-danger">Inactive</button>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() =>
+                            handleActiveAndInactive(client.id, "Inactive")
+                          }
+                        >
+                          Inactive
+                        </button>
                       </td>
                     </tr>
                   );

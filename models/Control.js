@@ -82,13 +82,5 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  Controls.associate = (models) => {
-    Controls.belongsTo(models.Clients, {
-      foreignKey: "client_name",
-      targetKey: "client_name",
-      onDelete: "CASCADE",
-    });
-  };
-
   return Controls;
 };

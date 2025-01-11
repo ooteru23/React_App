@@ -9,7 +9,7 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const report = req.body;
-  await Reports.bulkCreate(report, { ignoreDuplicates: true });
+  await Reports.bulkCreate(report);
   res.json(report);
 });
 

@@ -1,30 +1,33 @@
 const express = require("express");
 const router = express.Router();
 const { Clients, Controls, Setups } = require("../models");
+const control = require("../models/control");
 
 router.get("/", async (req, res) => {
   const listOfClients = await Clients.findAll();
   res.json(listOfClients);
 });
 
-router.delete("/:id", async (req, res) => {
-  const id = req.params.id;
+router.put("/:id", async (req, res) => {
+  const clientId = req.params.id;
+  const { client_status } = req.body;
 
-  const client = await Clients.findOne({ where: { id } });
-  if (!client) {
-    return res.status(404).json({ message: "Client not found" });
-  }
+  Clients.findByPk(clientId)
+    .then((client) => {
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
 
-  const clientName = client.client_name;
-
-  // Hapus data terkait di tabel Setups dan Controls
-  await Setups.destroy({ where: { client_candidate: clientName } });
-  await Controls.destroy({ where: { client_name: clientName } });
-
-  // Hapus data di tabel Clients
-  await Clients.destroy({ where: { id } });
-
-  res.json({ message: "Client and related data deleted successfully" });
+      client.client_status = client_status;
+      return client.save();
+    })
+    .then(() => {
+      res.json({ message: "Client status updated successfully" });
+    })
+    .catch((err) => {
+      console.error("Error updating client status", err);
+      res.status(500).json({ message: "Error updating client status" });
+    });
 });
 
 module.exports = router;

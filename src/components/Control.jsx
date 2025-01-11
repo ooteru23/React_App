@@ -6,6 +6,7 @@ import Select from "react-select";
 function Control() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
+  const [listOfClient, setListOfClient] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
@@ -83,6 +84,17 @@ function Control() {
 
   useEffect(() => {
     axios
+      .get("http://localhost:3001/clients/")
+      .then((response) => {
+        setListOfClient(response.data);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    axios
       .get("http://localhost:3001/employees")
       .then((response) => {
         setListOfEmployee(response.data);
@@ -143,16 +155,23 @@ function Control() {
   const handleCheckData = (e) => {
     e.preventDefault();
 
-    const filtered = listOfControl.filter((control) => {
-      const controlYear = new Date(control.createdAt).getFullYear();
-      const isEmployeeMatch =
-        !selectedEmployee ||
-        control.employee1 === selectedEmployee ||
-        control.employee2 === selectedEmployee;
-      const isYearMatch = controlYear === Number(currentYear, 10);
+    const filtered = listOfControl
+      .filter((control) => {
+        const client = listOfClient.find(
+          (client) => client.client_name === control.client_name
+        );
+        return client && client.client_status === "Active";
+      })
+      .filter((control) => {
+        const controlYear = new Date(control.createdAt).getFullYear();
+        const isEmployeeMatch =
+          !selectedEmployee ||
+          control.employee1 === selectedEmployee ||
+          control.employee2 === selectedEmployee;
+        const isYearMatch = controlYear === Number(currentYear, 10);
 
-      return isEmployeeMatch && isYearMatch;
-    });
+        return isEmployeeMatch && isYearMatch;
+      });
 
     setFilteredControl(filtered);
   };
@@ -209,8 +228,6 @@ function Control() {
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
-                  <th>Employee1</th>
-                  <th>Employee2</th>
                   <th>January</th>
                   <th>February</th>
                   <th>March</th>
@@ -231,8 +248,6 @@ function Control() {
                     <tr key={control.id}>
                       <td>{index + 1}</td>
                       <td>{control.client_name}</td>
-                      <td>{control.employee1}</td>
-                      <td>{control.employee2}</td>
                       {renderMonthDropdowns(control)}
                     </tr>
                   );
