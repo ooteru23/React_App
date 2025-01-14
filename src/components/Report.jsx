@@ -41,11 +41,21 @@ function Report() {
 
   const handleViewReport = (e) => {
     e.preventDefault();
+    const seenEmployees = new Set();
     const filtered = listOfReport.filter((report) => {
       const reportYear = new Date(report.createdAt).getFullYear();
-      return (
-        report.month === selectedMonth && reportYear === Number(currentYear, 10)
-      );
+      const reportMonth = report.month;
+      const employeeName = report.employee_name;
+
+      if (
+        reportMonth === selectedMonth &&
+        reportYear === Number(currentYear, 10) &&
+        !seenEmployees.has(employeeName)
+      ) {
+        seenEmployees.add(employeeName);
+        return true;
+      }
+      return false;
     });
     setFilteredReport(filtered);
     setShowTable(true);

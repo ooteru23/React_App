@@ -279,7 +279,7 @@ function Setup() {
     const result =
       (parsedContractValue - parsedCommissionPrice - parsedSoftwarePrice) *
       parsedPercent1;
-    return isNaN(result) ? "" : formatNumber(result.toString());
+    return isNaN(result) ? "" : formatNumber(Math.round(result).toString());
   };
 
   const calculateNetValue2 = (
@@ -298,7 +298,7 @@ function Setup() {
     const result =
       (parsedContractValue - parsedCommissionPrice - parsedSoftwarePrice) *
       parsedPercent2;
-    return isNaN(result) ? "" : formatNumber(result.toString());
+    return isNaN(result) ? "" : formatNumber(Math.round(result).toString());
   };
 
   const handleChange = (e) => {

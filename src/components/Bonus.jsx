@@ -6,6 +6,7 @@ function Bonus() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfBonus, setListOfBonus] = useState([]);
+  const [listOfReport, setListOfReport] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -81,8 +82,23 @@ function Bonus() {
       });
   }, []);
 
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/reports")
+      .then((response) => {
+        setListOfReport(response.data);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
+  }, []);
+
   const handleAddBonus = (e) => {
     e.preventDefault();
+
+    if (salaryDeduction === 0) {
+      return;
+    }
 
     const isAnyDataPaid = bonusTableData.some((data) =>
       listOfBonus.some(
@@ -114,16 +130,6 @@ function Bonus() {
       work_status: data.status,
       net_value: data.netValue,
       disbursement_bonus: "Paid",
-      salary_deduction: salaryDeduction,
-      month_ontime: onTime,
-      month_late: late,
-      bonus_component: bonusComponent,
-      percent_ontime: percentOnTime,
-      percent_late: percentLate,
-      total_ontime: totalOnTime,
-      total_late: totalLate,
-      bonus_ontime: bonusOnTime,
-      bonus_late: bonusLate,
     }));
 
     axios
@@ -153,6 +159,17 @@ function Bonus() {
         });
         console.error("Error Saving Data", error);
       });
+
+    const reportPaid = bonusTableData.some((data) =>
+      listOfReport.some(
+        (report) =>
+          report.employee_name === data.employee && report.month === data.month
+      )
+    );
+
+    if (reportPaid) {
+      return;
+    }
 
     const addToReport = bonusTableData.map((data) => ({
       employee_name: data.employee,
@@ -195,7 +212,7 @@ function Bonus() {
     });
 
     if (!isValidMonth) {
-      toast.error(`Tidak ada status yang cocok dengan ${selectedMonth}.`);
+      toast.error(`Status don't matched with ${selectedMonth}.`);
       return;
     }
 
@@ -206,7 +223,7 @@ function Bonus() {
     );
 
     if (!employeeMatches) {
-      toast.error("Tidak ada Nama Karyawan yang cocok.");
+      toast.error("Employees don't matched.");
       return;
     }
     const allData = listOfControl.flatMap((control) => {
@@ -251,7 +268,10 @@ function Bonus() {
         !filteredListOfBonus.some(
           (bonus) =>
             bonus.client_name === data.clientName &&
+            bonus.employee_name === data.employee &&
             bonus.month === data.month &&
+            bonus.work_status === data.status &&
+            bonus.net_value === data.netValue &&
             bonus.disbursement_bonus
         )
     );
@@ -277,6 +297,7 @@ function Bonus() {
         }))
       );
     }
+
     let onTimeValue = 0;
     let lateValue = 0;
     allData.forEach((data) => {
@@ -287,6 +308,7 @@ function Bonus() {
           bonus.month === data.month &&
           bonus.disbursement_bonus === "Paid"
       );
+
       if (!isPaid) {
         const numericValue = Number(data.netValue.replace(/\./g, ""));
         if (data.status === "ON TIME") {
@@ -310,7 +332,7 @@ function Bonus() {
     setPercentOnTime(Math.round(percentageOnTime));
 
     const totalOnTime = (Math.round(percentageOnTime) / 100) * bonusComponent;
-    setTotalOnTime(totalOnTime);
+    setTotalOnTime(Math.round(totalOnTime));
 
     const percentageLate = (lateValue / totalValue) * 100;
     setPercentLate(Math.round(percentageLate));
@@ -319,7 +341,7 @@ function Bonus() {
     setTotalLate(totalLate);
 
     const bonusOnTime = (totalOnTime / 100) * 15;
-    setBonusOnTime(bonusOnTime);
+    setBonusOnTime(Math.round(bonusOnTime));
 
     const bonusLate = (totalLate / 100) * 10;
     setBonusLate(bonusLate);
