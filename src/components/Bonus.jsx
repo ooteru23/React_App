@@ -7,6 +7,7 @@ function Bonus() {
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfBonus, setListOfBonus] = useState([]);
   const [listOfReport, setListOfReport] = useState([]);
+  const [listOfClient, setListOfClient] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -87,6 +88,17 @@ function Bonus() {
       .get("http://localhost:3001/reports")
       .then((response) => {
         setListOfReport(response.data);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/clients/")
+      .then((response) => {
+        setListOfClient(response.data);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -232,38 +244,44 @@ function Bonus() {
         return [];
       }
 
-      return Object.keys(monthMapping).flatMap((month) => {
-        const monthColumnKey = `month_${monthMapping[month]}`;
-        const status = control[monthColumnKey];
-        if (status === "ON TIME" || status === "LATE") {
-          const matchedEmployee =
-            selectedEmployee === control.employee1
-              ? control.employee1
-              : selectedEmployee === control.employee2
-              ? control.employee2
-              : "";
+      const monthKey = `month_${monthMapping[selectedMonth]}`;
+      const status = control[monthKey];
 
-          const netValue =
-            selectedEmployee === control.employee1
-              ? control.net_value1
-              : selectedEmployee === control.employee2
-              ? control.net_value2
-              : "";
+      if (status === "ON TIME" || status === "LATE") {
+        const isEmployee1 = selectedEmployee === control.employee1;
+        const isEmployee2 = selectedEmployee === control.employee2;
 
-          return {
+        if (!isEmployee1 && !isEmployee2) {
+          return [];
+        }
+
+        const matchedEmployee = isEmployee1
+          ? control.employee1
+          : control.employee2;
+        const netValue = isEmployee1 ? control.net_value1 : control.net_value2;
+
+        return [
+          {
             clientName: control.client_name,
             employee: matchedEmployee,
-            month,
-            status,
-            netValue,
+            month: selectedMonth,
+            status: status,
+            netValue: netValue,
             disbursement_bonus: "Unpaid",
-          };
-        }
-        return [];
-      });
+          },
+        ];
+      }
+      return [];
     });
 
-    const unmatchedData = allData.filter(
+    const activeClientData = allData.filter((data) => {
+      const client = listOfClient.find(
+        (client) => client.client_name === data.clientName
+      );
+      return client && client.client_status !== "Inactive";
+    });
+
+    const unmatchedData = activeClientData.filter(
       (data) =>
         !filteredListOfBonus.some(
           (bonus) =>
@@ -300,7 +318,7 @@ function Bonus() {
 
     let onTimeValue = 0;
     let lateValue = 0;
-    allData.forEach((data) => {
+    activeClientData.forEach((data) => {
       const isPaid = listOfBonus.some(
         (bonus) =>
           bonus.client_name === data.clientName &&
