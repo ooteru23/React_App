@@ -74,7 +74,7 @@ function Bonus() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/bonuses")
+      .get("http://localhost:3001/bonuses/")
       .then((response) => {
         setListOfBonus(response.data);
       })
@@ -225,7 +225,7 @@ function Bonus() {
 
     if (!isValidMonth) {
       toast.error(`Status don't matched with ${selectedMonth}.`);
-      return;
+      return [];
     }
 
     const employeeMatches = listOfControl.some(
@@ -236,7 +236,7 @@ function Bonus() {
 
     if (!employeeMatches) {
       toast.error("Employees don't matched.");
-      return;
+      return [];
     }
     const allData = listOfControl.flatMap((control) => {
       const controlYear = new Date(control.createdAt).getFullYear();

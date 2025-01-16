@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Bonuses } = require("../models");
+const { Bonuses, Controls } = require("../models");
 
 router.get("/", async (req, res) => {
   const listOfBonuses = await Bonuses.findAll();
