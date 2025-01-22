@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 
 function Client() {
   const [listOfClient, setListOfClient] = useState([]);
+  const [buttonStates, setButtonStates] = useState({});
   const [searchFilter, setSearchFilter] = useState("");
 
   const formatDate = (dateString) => {
@@ -16,7 +17,14 @@ function Client() {
     axios
       .get("http://localhost:3001/clients/")
       .then((response) => {
-        setListOfClient(response.data);
+        const clients = response.data;
+        setListOfClient(clients);
+
+        const initialStates = {};
+        clients.forEach((client) => {
+          initialStates[client.id] = client.client_status;
+        });
+        setButtonStates(initialStates);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -34,6 +42,10 @@ function Client() {
             client.id === id ? { ...client, client_status: newStatus } : client
           )
         );
+        setButtonStates((prevStates) => ({
+          ...prevStates,
+          [id]: newStatus,
+        }));
         console.log("Client Status Updated!");
       })
       .catch((err) => {
@@ -94,6 +106,7 @@ function Client() {
               </thead>
               <tbody className="text-center align-middle">
                 {filteredClient.map((client, index) => {
+                  const isActive = buttonStates[client.id] === "Active";
                   return (
                     <tr key={client.id}>
                       <td>{index + 1}</td>
@@ -105,16 +118,32 @@ function Client() {
                       <td>{client.contract_value}</td>
                       <td>{formatDate(client.createdAt)}</td>
                       <td>
-                        <button
+                        <input
+                          type="radio"
+                          className="btn-check"
+                          id={`btn-check-active-${client.id}`}
+                          checked={isActive}
+                          readOnly
+                        />
+                        <label
                           className="btn btn-primary"
+                          htmlFor={`btn-check-active-${client.id}`}
                           onClick={() =>
                             handleActiveAndInactive(client.id, "Active")
                           }
                         >
                           Active
-                        </button>
+                        </label>
+                        <input
+                          type="radio"
+                          className="btn-check"
+                          id={`btn-check-inactive-${client.id}`}
+                          checked={!isActive}
+                          readOnly
+                        />
                         <button
                           className="btn btn-danger"
+                          htmlFor={`btn-check-inactive-${client.id}`}
                           onClick={() =>
                             handleActiveAndInactive(client.id, "Inactive")
                           }

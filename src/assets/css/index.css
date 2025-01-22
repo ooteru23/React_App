@@ -12,7 +12,7 @@ tbody {
   cursor: pointer;
 }
 
-btn-check:focus + .btn-primary,
+/* btn-check:focus + .btn-primary,
 .btn-primary:focus {
   box-shadow: 0 0 0 0.25rem rgba(21, 0, 255, 0.844);
 }
@@ -34,7 +34,7 @@ btn-check:focus + .btn-danger,
 .btn-danger:active:focus,
 .show > .btn-danger.dropdown-toggle:focus {
   box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.5);
-}
+} */
 /* #calculate:active {
   box-shadow: inset -2px -2px 3px rgba(255, 255, 255, 0.6),
     inset 2px 2px 3px rgba(0, 0, 0, 0.6);
