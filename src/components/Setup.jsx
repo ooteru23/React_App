@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 function Setup() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
+  const [filteredClient, setFilteredClient] = useState([]);
   const [listOfClient, setListOfClient] = useState([]);
   const [listOfSetup, setListOfSetup] = useState([]);
   const [addedClient, setAddedClient] = useState([]);
@@ -43,6 +44,10 @@ function Setup() {
       .get("http://localhost:3001/clients/")
       .then((response) => {
         setListOfClient(response.data);
+        const activeClient = response.data.filter(
+          (client) => client.client_status !== "Inactive"
+        );
+        setFilteredClient(activeClient);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -202,7 +207,7 @@ function Setup() {
 
   const filteredSetup = listOfSetup
     .filter((setup) => {
-      const client = listOfClient.find(
+      const client = filteredClient.find(
         (client) => client.client_name === setup.client_candidate
       );
       return client && client.client_status === "Active";
@@ -229,7 +234,7 @@ function Setup() {
         setup.net_value2.toLowerCase().includes(searchFilter.toLowerCase())
     );
 
-  const availableClient = listOfClient.filter(
+  const availableClient = filteredClient.filter(
     (client) => !addedClient.includes(client.client_name)
   );
 
@@ -394,7 +399,7 @@ function Setup() {
     const selectedClient = e.target.value;
     setClientCandidate(selectedClient);
 
-    const client = listOfClient.find(
+    const client = filteredClient.find(
       (client) => client.client_name === selectedClient
     );
     if (client) {

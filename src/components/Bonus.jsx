@@ -214,7 +214,10 @@ function Bonus() {
 
     const filteredListOfBonus = listOfBonus.filter((bonus) => {
       const bonusYear = new Date(bonus.createdAt).getFullYear();
-      return bonusYear === Number(currentYear, 10);
+      return (
+        bonusYear === Number(currentYear, 10) &&
+        bonus.employee_name === selectedEmployee
+      );
     });
 
     const isValidMonth = listOfControl.some((control) => {
@@ -224,7 +227,7 @@ function Bonus() {
     });
 
     if (!isValidMonth) {
-      toast.error(`Status don't matched with ${selectedMonth}.`);
+      setBonusTableData([]);
       return [];
     }
 
@@ -235,7 +238,7 @@ function Bonus() {
     );
 
     if (!employeeMatches) {
-      toast.error("Employees don't matched.");
+      setBonusTableData([]);
       return [];
     }
     const allData = listOfControl.flatMap((control) => {
@@ -346,22 +349,24 @@ function Bonus() {
       salaryDeduction !== 0 ? totalValue - salaryDeduction : 0;
     setBonusComponent(bonusComponent);
 
-    const percentageOnTime = (onTimeValue / totalValue) * 100;
+    const percentageOnTime =
+      totalValue > 0 ? (onTimeValue / totalValue) * 100 : 0;
     setPercentOnTime(Math.round(percentageOnTime));
 
-    const totalOnTime = (Math.round(percentageOnTime) / 100) * bonusComponent;
-    setTotalOnTime(Math.round(totalOnTime));
+    const totalOnTime =
+      Math.round((percentageOnTime / 100) * bonusComponent) || 0;
+    setTotalOnTime(totalOnTime);
 
-    const percentageLate = (lateValue / totalValue) * 100;
+    const percentageLate = totalValue > 0 ? (lateValue / totalValue) * 100 : 0;
     setPercentLate(Math.round(percentageLate));
 
-    const totalLate = (Math.round(percentageLate) / 100) * bonusComponent;
+    const totalLate = Math.round((percentageLate / 100) * bonusComponent) || 0;
     setTotalLate(totalLate);
 
-    const bonusOnTime = (totalOnTime / 100) * 15;
-    setBonusOnTime(Math.round(bonusOnTime));
+    const bonusOnTime = Math.round((totalOnTime / 100) * 15) || 0;
+    setBonusOnTime(bonusOnTime);
 
-    const bonusLate = (totalLate / 100) * 10;
+    const bonusLate = Math.round((totalLate / 100) * 10) || 0;
     setBonusLate(bonusLate);
 
     const total = bonusOnTime + bonusLate;
