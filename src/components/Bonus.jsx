@@ -380,11 +380,21 @@ function Bonus() {
     setSalaryDeduction(numericValue);
   };
 
+  const handleEnter = (e) => {
+    if (e.key === "Enter") {
+      handleCalculate(e);
+    }
+  };
+
   return (
     <>
       <div className="container">
         <h3 className="text-center mt-3 mb-5">Kalkulasi Bonus</h3>
-        <form className="row g-3" onSubmit={handleCalculate}>
+        <form
+          className="row g-3"
+          onSubmit={handleCalculate}
+          onKeyDown={handleEnter}
+        >
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="employee_name"> Nama Karyawan </label>
             <select
@@ -504,6 +514,7 @@ function Bonus() {
                 className="form-control w-50"
                 value={Number(salaryDeduction).toLocaleString("id-ID")}
                 onChange={handleSalaryDeductionChange}
+                onKeyDown={handleEnter}
               />
             </div>
             <div className="form-group col-md-6 mt-3">

@@ -61,11 +61,21 @@ function Report() {
     setShowTable(true);
   };
 
+  const handleEnter = (e) => {
+    if (e.key === "Enter") {
+      handleCalculate(e);
+    }
+  };
+
   return (
     <>
       <div className="container">
         <h3 className="text-center mt-3 mb-5">Laporan Bonus</h3>
-        <form className="row g-3" onSubmit={handleViewReport}>
+        <form
+          className="row g-3"
+          onSubmit={handleViewReport}
+          onKeyDown={handleEnter}
+        >
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="month"> Bulan </label>
             <select

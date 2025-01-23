@@ -122,7 +122,7 @@ function EditSetup() {
   );
 
   const formatNumber = (num) => {
-   return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
   const calculateNetValue1 = (
@@ -132,14 +132,16 @@ function EditSetup() {
     percent1
   ) => {
     const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
-    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/\./g, ""));
+    const parsedCommissionPrice = parseFloat(
+      commissionPrice.replace(/\./g, "")
+    );
     const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
     const parsedPercent1 = parseFloat(percent1) / 100;
 
     const result =
       (parsedContractValue - parsedCommissionPrice - parsedSoftwarePrice) *
       parsedPercent1;
-    return isNaN(result) ? "" : formatNumber(result.toString());
+    return isNaN(result) ? "" : formatNumber(Math.round(result).toString());
   };
 
   const calculateNetValue2 = (
@@ -149,14 +151,16 @@ function EditSetup() {
     percent2
   ) => {
     const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
-    const parsedCommissionPrice = parseFloat(commissionPrice.replace(/\./g, ""));
+    const parsedCommissionPrice = parseFloat(
+      commissionPrice.replace(/\./g, "")
+    );
     const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
     const parsedPercent2 = parseFloat(percent2) / 100;
 
     const result =
       (parsedContractValue - parsedCommissionPrice - parsedSoftwarePrice) *
       parsedPercent2;
-    return isNaN(result) ? "" : formatNumber(result.toString());
+    return isNaN(result) ? "" : formatNumber(Math.round(result).toString());
   };
 
   const handleChange = (e) => {
