@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import Select from "react-select";
+import Swal from "sweetalert2";
 
 function Control() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -122,34 +123,42 @@ function Control() {
   const handleSave = (e) => {
     e.preventDefault();
 
-    axios
-      .post("http://localhost:3001/controls/update-data", filteredControl)
-      .then((response) => {
-        toast.success("Data saved successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClose: () => window.location.reload(),
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .post("http://localhost:3001/controls/update-data", filteredControl)
+          .then((response) => {
+            console.log("Data Added:", response.data);
+            setIsEditing(false);
+          })
+          .catch((error) => {
+            toast.error("Failed to save data. Please try again.", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error saving data:", error);
+          });
+        Swal.fire({
+          title: "Saved!",
+          icon: "success",
+          didClose: () => {
+            window.location.reload();
+          },
         });
-        console.log("Data Added:", response.data);
-        setIsEditing(false);
-      })
-      .catch((error) => {
-        toast.error("Failed to save data. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error saving data:", error);
-      });
+      }
+    });
   };
 
   const handleCheckData = (e) => {

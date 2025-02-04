@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 function Setup() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -68,13 +69,9 @@ function Setup() {
 
   useEffect(() => {
     if (location.state && location.state.message) {
-      toast.success(location.state.message, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        title: location.state.message,
+        icon: "success",
       });
 
       navigate(".", { replace: true, state: {} });
@@ -95,34 +92,42 @@ function Setup() {
       net_value1: net_value1,
       net_value2: net_value2,
     };
-    axios
-      .post("http://localhost:3001/setups", newSetup)
-      .then((response) => {
-        toast.success("Data Added Successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClose: () => window.location.reload(),
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .post("http://localhost:3001/setups", newSetup)
+          .then((response) => {
+            setAddedClient([...addedClient, client_candidate]);
+            console.log("Data Added:", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Adding Data!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Adding Data", error);
+          });
+        Swal.fire({
+          title: "Saved!",
+          icon: "success",
+          didClose: () => {
+            window.location.reload();
+          },
         });
-        setAddedClient([...addedClient, client_candidate]);
-        console.log("Data Added:", response.data);
-      })
-      .catch((error) => {
-        toast.error("Error Adding Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Adding Data", error);
-      });
+      }
+    });
   };
 
   const handleSaveToControl = (e) => {
@@ -136,65 +141,79 @@ function Setup() {
       net_value2: setup.net_value2,
     }));
 
-    axios
-      .post("http://localhost:3001/controls/creating-data", saveToControl)
-      .then((response) => {
-        toast.success("Data Saved Successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClose: () => window.location.reload(),
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .post("http://localhost:3001/controls/creating-data", saveToControl)
+          .then((response) => {
+            console.log("Data Added:", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Adding Data", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Adding Data", error);
+          });
+        Swal.fire({
+          title: "Saved!",
+          icon: "success",
+          didClose: () => {
+            window.location.reload();
+          },
         });
-        console.log("Data Added:", response.data);
-      })
-      .catch((error) => {
-        toast.error("Error Adding Data", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Adding Data", error);
-      });
+      }
+    });
   };
 
   const handleDelete = (id) => {
-    axios
-      .delete(`http://localhost:3001/setups/${id}`)
-      .then((response) => {
-        toast.success("Data Deleted Successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:3001/setups/${id}`)
+          .then((response) => {
+            const deletedSetup = listOfSetup.filter((setup) => setup.id !== id);
+            setListOfSetup(deletedSetup);
+            setAddedClient(deletedSetup.map((setup) => setup.client_candidate));
+            console.log("Data Deleted:", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Deleting Data!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Deleting Data:", error);
+          });
+        Swal.fire({
+          title: "Deleted!",
+          icon: "success",
         });
-        const deletedSetup = listOfSetup.filter((setup) => setup.id !== id);
-        setListOfSetup(deletedSetup);
-        setAddedClient(deletedSetup.map((setup) => setup.client_candidate));
-        console.log("Data Deleted:", response.data);
-      })
-      .catch((error) => {
-        toast.error("Error Deleting Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Deleting Data:", error);
-      });
+      }
+    });
   };
 
   const handleEdit = (id) => {

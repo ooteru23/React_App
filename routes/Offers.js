@@ -36,7 +36,6 @@ router.put("/:id", async (req, res) => {
       telephone: offer.telephone,
       service: offer.service,
       contract_value: offer.price,
-      valid_date: offer.valid_date,
       client_status: "Active",
     };
 

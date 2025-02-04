@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 function EditSetup() {
   const { id } = useParams();
@@ -75,25 +76,36 @@ function EditSetup() {
       net_value1,
       net_value2,
     };
-    axios
-      .put(`http://localhost:3001/setups/${id}`, updatedSetup)
-      .then((response) => {
-        navigate("/project-setup", {
-          state: { message: "Data Updated Successfully!" },
-        });
-        console.log("Data Updated:", response.data);
-      })
-      .catch((error) => {
-        toast.error("Error Updating Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        console.log("Error Updating Data:", error);
-      });
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .put(`http://localhost:3001/setups/${id}`, updatedSetup)
+          .then((response) => {
+            navigate("/project-setup", {
+              state: { message: " Updated! " },
+            });
+            console.log("Data Updated:", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Updating Data!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            });
+            console.log("Error Updating Data:", error);
+          });
+      }
+    });
   };
 
   const handleEmployee1Change = (e) => {

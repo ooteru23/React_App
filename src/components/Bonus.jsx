@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 function Bonus() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -112,28 +113,28 @@ function Bonus() {
       return;
     }
 
-    const isAnyDataPaid = bonusTableData.some((data) =>
-      listOfBonus.some(
-        (bonus) =>
-          bonus.client_name === data.clientName &&
-          bonus.employee_name === data.employee &&
-          bonus.month === data.month &&
-          bonus.disbursement_bonus === "Paid"
-      )
-    );
+    // const isAnyDataPaid = bonusTableData.some((data) =>
+    //   listOfBonus.some(
+    //     (bonus) =>
+    //       bonus.client_name === data.clientName &&
+    //       bonus.employee_name === data.employee &&
+    //       bonus.month === data.month &&
+    //       bonus.disbursement_bonus === "Paid"
+    //   )
+    // );
 
-    if (isAnyDataPaid) {
-      toast.error("Data Already Saved", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (isAnyDataPaid) {
+    //   toast.error("Data Already Saved", {
+    //     position: "top-right",
+    //     autoClose: 3000,
+    //     hideProgressBar: false,
+    //     closeOnClick: true,
+    //     pauseOnHover: true,
+    //     draggable: true,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
     const addToBonus = bonusTableData.map((data) => ({
       employee_name: data.employee,
@@ -144,44 +145,17 @@ function Bonus() {
       disbursement_bonus: "Paid",
     }));
 
-    axios
-      .post("http://localhost:3001/bonuses", addToBonus)
-      .then((response) => {
-        toast.success("Data Saved Successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClose: () => window.location.reload(),
-        });
-        console.log("Data Added:", response.data);
-      })
-      .catch(() => {
-        toast.error("Error Saving Data", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        console.error("Error Saving Data", error);
-      });
+    // const reportPaid = listOfBonus.some((bonus) =>
+    //   listOfReport.some(
+    //     (report) =>
+    //       report.employee_name === bonus.employee_name &&
+    //       report.month === bonus.month
+    //   )
+    // );
 
-    const reportPaid = bonusTableData.some((data) =>
-      listOfReport.some(
-        (report) =>
-          report.employee_name === data.employee && report.month === data.month
-      )
-    );
-
-    if (reportPaid) {
-      return;
-    }
+    // if (reportPaid) {
+    //   return;
+    // }
 
     const addToReport = bonusTableData.map((data) => ({
       employee_name: data.employee,
@@ -199,14 +173,60 @@ function Bonus() {
       total: total,
     }));
 
-    axios
-      .post("http://localhost:3001/reports", addToReport)
-      .then((response) => {
-        console.log("Data Added:", response.data);
-      })
-      .catch(() => {
-        console.error("Error Saving Data", error);
-      });
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .post("http://localhost:3001/bonuses", addToBonus)
+          .then((response) => {
+            toast.success("Data Saved Successfully!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              onClose: () => window.location.reload(),
+            });
+            console.log("Data Added:", response.data);
+          })
+          .catch(() => {
+            toast.error("Error Saving Data", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Saving Data", error);
+          });
+
+        axios
+          .post("http://localhost:3001/reports", addToReport)
+          .then((response) => {
+            console.log("Data Added:", response.data);
+          })
+          .catch(() => {
+            console.error("Error Saving Data", error);
+          });
+        Swal.fire({
+          title: "Saved!",
+          icon: "success",
+          didClose: () => {
+            window.location.reload();
+          },
+        });
+      }
+    });
   };
 
   const handleCalculate = (e) => {
@@ -241,40 +261,62 @@ function Bonus() {
       setBonusTableData([]);
       return [];
     }
+
+    const getAdjacentMonths = (month) => {
+      const months = Object.keys(monthMapping);
+      const currentIndex = months.indexOf(month);
+      const prevMonth = currentIndex > 0 ? months[currentIndex - 1] : null;
+      const nextMonth =
+        currentIndex < months.length - 1 ? months[currentIndex + 1] : null;
+      return { prevMonth, currentMonth: month, nextMonth };
+    };
+
+    const { prevMonth, currentMonth, nextMonth } =
+      getAdjacentMonths(selectedMonth);
+
     const allData = listOfControl.flatMap((control) => {
       const controlYear = new Date(control.createdAt).getFullYear();
-      if (controlYear !== currentYear) {
+      if (controlYear !== Number(currentYear, 10)) {
         return [];
       }
 
-      const monthKey = `month_${monthMapping[selectedMonth]}`;
-      const status = control[monthKey];
+      const monthsToCheck = [prevMonth, currentMonth, nextMonth].filter(
+        Boolean
+      );
+      const relevantData = monthsToCheck.flatMap((month) => {
+        const monthKey = `month_${monthMapping[month]}`;
+        const status = control[monthKey];
 
-      if (status === "ON TIME" || status === "LATE") {
-        const isEmployee1 = selectedEmployee === control.employee1;
-        const isEmployee2 = selectedEmployee === control.employee2;
+        if (status === "ON TIME" || status === "LATE") {
+          const isEmployee1 = selectedEmployee === control.employee1;
+          const isEmployee2 = selectedEmployee === control.employee2;
 
-        if (!isEmployee1 && !isEmployee2) {
-          return [];
+          if (!isEmployee1 && !isEmployee2) {
+            return [];
+          }
+
+          const matchedEmployee = isEmployee1
+            ? control.employee1
+            : control.employee2;
+          const netValue = isEmployee1
+            ? control.net_value1
+            : control.net_value2;
+
+          return [
+            {
+              clientName: control.client_name,
+              employee: matchedEmployee,
+              month: month,
+              status: status,
+              netValue: netValue,
+              disbursement_bonus: "Unpaid",
+            },
+          ];
         }
+        return [];
+      });
 
-        const matchedEmployee = isEmployee1
-          ? control.employee1
-          : control.employee2;
-        const netValue = isEmployee1 ? control.net_value1 : control.net_value2;
-
-        return [
-          {
-            clientName: control.client_name,
-            employee: matchedEmployee,
-            month: selectedMonth,
-            status: status,
-            netValue: netValue,
-            disbursement_bonus: "Unpaid",
-          },
-        ];
-      }
-      return [];
+      return relevantData;
     });
 
     const activeClientData = allData.filter((data) => {
@@ -353,15 +395,14 @@ function Bonus() {
       totalValue > 0 ? (onTimeValue / totalValue) * 100 : 0;
     setPercentOnTime(Math.round(percentageOnTime));
 
-    const totalOnTime =
-      Math.round((percentageOnTime / 100) * bonusComponent) || 0;
-    setTotalOnTime(totalOnTime);
+    const totalOnTime = (percentOnTime / 100) * bonusComponent || 0;
+    setTotalOnTime(Math.round(totalOnTime));
 
     const percentageLate = totalValue > 0 ? (lateValue / totalValue) * 100 : 0;
     setPercentLate(Math.round(percentageLate));
 
-    const totalLate = Math.round((percentageLate / 100) * bonusComponent) || 0;
-    setTotalLate(totalLate);
+    const totalLate = (percentLate / 100) * bonusComponent || 0;
+    setTotalLate(Math.round(totalLate));
 
     const bonusOnTime = Math.round((totalOnTime / 100) * 15) || 0;
     setBonusOnTime(bonusOnTime);

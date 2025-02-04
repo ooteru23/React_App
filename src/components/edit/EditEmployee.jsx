@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 function EditEmployee() {
   const { id } = useParams();
@@ -28,25 +29,37 @@ function EditEmployee() {
   const handleUpdateEmployee = (e) => {
     e.preventDefault();
     const updatedEmployee = { name, job_title, status, salary };
-    axios
-      .put(`http://localhost:3001/employees/${id}`, updatedEmployee)
-      .then((response) => {
-        navigate("/employee", {
-          state: { message: "Data Updated Successfully" },
-        });
-        console.log("Data Updated", response.data);
-      })
-      .catch((error) => {
-        toast.error("Error Updating Data!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        console.error("Error Updating Data:", error);
-      });
+
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .put(`http://localhost:3001/employees/${id}`, updatedEmployee)
+          .then((response) => {
+            navigate("/employee", {
+              state: { message: "Updated!" },
+            });
+            console.log("Data Updated", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Updating Data!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            });
+            console.error("Error Updating Data:", error);
+          });
+      }
+    });
   };
 
   const formatNumber = (num) => {

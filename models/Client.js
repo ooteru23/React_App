@@ -24,10 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    valid_date: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     client_status: {
       type: DataTypes.STRING,
       allowNull: true,
