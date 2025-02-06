@@ -346,11 +346,11 @@ function Bonus() {
         bonus.disbursement_bonus
     );
 
-    if (filteredBonusData.length === 0) {
+    if (filteredListOfBonus.length === 0) {
       setBonusTableData(unmatchedData);
     } else {
       setBonusTableData(
-        filteredListOfBonus.map((bonus) => ({
+        filteredBonusData.map((bonus) => ({
           clientName: bonus.client_name,
           employee: bonus.employee_name,
           month: bonus.month,
