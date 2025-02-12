@@ -185,16 +185,6 @@ function Bonus() {
         axios
           .post("http://localhost:3001/bonuses", addToBonus)
           .then((response) => {
-            toast.success("Data Saved Successfully!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              onClose: () => window.location.reload(),
-            });
             console.log("Data Added:", response.data);
           })
           .catch(() => {
@@ -346,11 +336,11 @@ function Bonus() {
         bonus.disbursement_bonus
     );
 
-    if (filteredListOfBonus.length === 0) {
+    if (filteredBonusData.length === 0) {
       setBonusTableData(unmatchedData);
     } else {
       setBonusTableData(
-        filteredBonusData.map((bonus) => ({
+        filteredListOfBonus.map((bonus) => ({
           clientName: bonus.client_name,
           employee: bonus.employee_name,
           month: bonus.month,
