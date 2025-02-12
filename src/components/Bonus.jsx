@@ -353,24 +353,24 @@ function Bonus() {
 
     let onTimeValue = 0;
     let lateValue = 0;
-    activeClientData.forEach((data) => {
-      const isPaid = listOfBonus.some(
-        (bonus) =>
-          bonus.client_name === data.clientName &&
-          bonus.employee_name === data.employee &&
-          bonus.month === data.month &&
-          bonus.disbursement_bonus === "Paid"
-      );
 
-      if (!isPaid) {
+    const isPaid = listOfBonus.some(
+      (bonus) =>
+        bonus.employee_name === selectedEmployee &&
+        bonus.month === selectedMonth &&
+        bonus.disbursement_bonus === "Paid"
+    );
+
+    if (!isPaid) {
+      activeClientData.forEach((data) => {
         const numericValue = Number(data.netValue.replace(/\./g, ""));
         if (data.status === "ON TIME") {
           onTimeValue += numericValue;
         } else if (data.status === "LATE") {
           lateValue += numericValue;
         }
-      }
-    });
+      });
+    }
     setOnTime(onTimeValue);
     setLate(lateValue);
 
