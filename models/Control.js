@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     client_name: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true
     },
     employee1: {
       type: DataTypes.STRING,
