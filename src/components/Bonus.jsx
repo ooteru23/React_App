@@ -340,7 +340,7 @@ function Bonus() {
       setBonusTableData(unmatchedData);
     } else {
       setBonusTableData(
-        filteredListOfBonus.map((bonus) => ({
+        filteredBonusData.map((bonus) => ({
           clientName: bonus.client_name,
           employee: bonus.employee_name,
           month: bonus.month,

@@ -5,7 +5,11 @@ tbody {
   padding: 10px;
   text-align: center;
 } */
-
+body {
+  background-image: url("../HomeBackground.jpeg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 .btn {
   padding: 10px 20px;
   margin: 2px;
