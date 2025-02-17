@@ -362,7 +362,7 @@ function Bonus() {
     );
 
     if (!isPaid) {
-      activeClientData.forEach((data) => {
+      unmatchedData.forEach((data) => {
         const numericValue = Number(data.netValue.replace(/\./g, ""));
         if (data.status === "ON TIME") {
           onTimeValue += numericValue;
