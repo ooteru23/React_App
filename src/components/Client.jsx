@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 function Client() {
   const [listOfClient, setListOfClient] = useState([]);
@@ -73,6 +74,42 @@ function Client() {
     );
   });
 
+  const handleDelete = (id) => {
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:3001/clients/${id}`)
+          .then((response) => {
+            setListOfClient(listOfClient.filter((client) => client.id !== id));
+            console.log("Data Deleted:", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Deleting Data!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Deleting Data:", error);
+          });
+        Swal.fire({
+          title: "Deleted!",
+          icon: "success",
+        });
+      }
+    });
+  };
+
   return (
     <>
       <div className="container">
@@ -125,7 +162,7 @@ function Client() {
                           checked={isActive}
                           readOnly
                         />
-                        <label
+                        <button
                           className="btn btn-primary"
                           htmlFor={`btn-check-active-${client.id}`}
                           onClick={() =>
@@ -133,7 +170,7 @@ function Client() {
                           }
                         >
                           Active
-                        </label>
+                        </button>
                         <input
                           type="radio"
                           className="btn-check"
@@ -149,6 +186,12 @@ function Client() {
                           }
                         >
                           Inactive
+                        </button>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleDelete(client.id)}
+                        >
+                          Delete
                         </button>
                       </td>
                     </tr>

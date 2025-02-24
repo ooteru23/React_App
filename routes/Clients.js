@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Clients, Controls, Setups } = require("../models");
-const control = require("../models/control");
+const { Clients } = require("../models");
 
 router.get("/", async (req, res) => {
   const listOfClients = await Clients.findAll();
@@ -28,6 +27,14 @@ router.put("/:id", async (req, res) => {
       console.error("Error updating client status", err);
       res.status(500).json({ message: "Error updating client status" });
     });
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  await Clients.destroy({
+    where: { id: id },
+  });
+  res.json({ message: "Client Data Deleted" });
 });
 
 module.exports = router;

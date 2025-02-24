@@ -8,6 +8,7 @@ function Control() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfClient, setListOfClient] = useState([]);
+  const [listOfOffer, setListOfOffer] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
@@ -81,6 +82,17 @@ function Control() {
   useEffect(() => {
     const year = new Date().getFullYear();
     setCurrentYear(year);
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/offers")
+      .then((response) => {
+        setListOfOffer(response.data);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -172,13 +184,14 @@ function Control() {
         return client && client.client_status === "Active";
       })
       .filter((control) => {
-        const controlYear = new Date(control.createdAt).getFullYear();
         const isEmployeeMatch =
-          !selectedEmployee ||
           control.employee1 === selectedEmployee ||
           control.employee2 === selectedEmployee;
-        const isYearMatch = controlYear === Number(currentYear, 10);
-
+        const isYearMatch = listOfOffer.some(
+          (offer) =>
+            new Date(offer.period_time).getFullYear() ===
+            Number(currentYear, 10)
+        );
         return isEmployeeMatch && isYearMatch;
       });
 
