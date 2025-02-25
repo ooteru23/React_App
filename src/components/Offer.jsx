@@ -21,6 +21,8 @@ function Offer() {
   const [price, setPrice] = useState("");
   const [information, setInformation] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -214,6 +216,8 @@ function Offer() {
         return -1;
       return 0;
     });
+
+  const paginatedOffer = filteredOffer.slice((page - 1) * limit, page * limit);
 
   const formatNumber = (num) => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -411,7 +415,7 @@ function Offer() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {filteredOffer.map((offer, index) => {
+                {paginatedOffer.map((offer, index) => {
                   return (
                     <tr key={offer.id}>
                       <td>{index + 1}</td>
@@ -449,6 +453,26 @@ function Offer() {
                 })}
               </tbody>
             </table>
+            {/* Pagination Offers */}
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="btn btn-primary"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {Math.ceil(filteredOffer.length / limit)}
+              </span>
+              <button
+                className="btn btn-primary"
+                disabled={page >= Math.ceil(filteredOffer.length / limit)}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

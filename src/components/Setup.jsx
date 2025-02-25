@@ -22,6 +22,8 @@ function Setup() {
   const [net_value1, setNetValue1] = useState("");
   const [net_value2, setNetValue2] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -252,6 +254,8 @@ function Setup() {
         setup.net_value1.toLowerCase().includes(searchFilter.toLowerCase()) ||
         setup.net_value2.toLowerCase().includes(searchFilter.toLowerCase())
     );
+
+  const paginatedSetup = filteredSetup.slice((page - 1) * limit, page * limit);
 
   const availableClient = filteredClient.filter(
     (client) => !addedClient.includes(client.client_name)
@@ -627,7 +631,7 @@ function Setup() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {filteredSetup.map((setup, index) => {
+                {paginatedSetup.map((setup, index) => {
                   return (
                     <tr key={setup.id}>
                       <td>{index + 1}</td>
@@ -660,6 +664,26 @@ function Setup() {
                 })}
               </tbody>
             </table>
+            {/* Pagination Setups */}
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="btn btn-primary"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {Math.ceil(filteredSetup.length / limit)}
+              </span>
+              <button
+                className="btn btn-primary"
+                disabled={page >= Math.ceil(filteredSetup.length / limit)}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
         <form className="row g-3" onSubmit={handleSaveToControl}>

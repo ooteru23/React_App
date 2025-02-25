@@ -26,6 +26,8 @@ function Bonus() {
   const [bonusOnTime, setBonusOnTime] = useState(0);
   const [bonusLate, setBonusLate] = useState(0);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
 
   const monthMapping = {
     January: "jan",
@@ -406,6 +408,8 @@ function Bonus() {
 
   const tableData = bonusTableData;
 
+  const paginatedBonus = tableData.slice((page - 1) * limit, page * limit);
+
   const handleSalaryDeductionChange = (e) => {
     const numericValue = e.target.value.replace(/\./g, "");
     setSalaryDeduction(numericValue);
@@ -491,7 +495,7 @@ function Bonus() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {tableData.map((data, index) => (
+                {paginatedBonus.map((data, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
                     <td hidden>{data.employee}</td>
@@ -504,6 +508,26 @@ function Bonus() {
                 ))}
               </tbody>
             </table>
+            {/* Pagination Bonuses */}
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="btn btn-primary"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {Math.ceil(tableData.length / limit)}
+              </span>
+              <button
+                className="btn btn-primary"
+                disabled={page >= Math.ceil(tableData.length / limit)}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
         {/* Input field */}

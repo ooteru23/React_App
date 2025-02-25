@@ -11,6 +11,8 @@ function Employee() {
   const [status, setStatus] = useState("");
   const [salary, setSalary] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -142,6 +144,11 @@ function Employee() {
       return 0;
     });
 
+  const paginatedEmployee = filteredEmployee.slice(
+    (page - 1) * limit,
+    page * limit
+  );
+
   const formatNumber = (num) => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
@@ -241,7 +248,7 @@ function Employee() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {filteredEmployee.map((employee, index) => {
+                {paginatedEmployee.map((employee, index) => {
                   return (
                     <tr key={employee.id}>
                       <td>{index + 1}</td>
@@ -268,6 +275,26 @@ function Employee() {
                 })}
               </tbody>
             </table>
+            {/* Pagination Employees */}
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="btn btn-primary"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {Math.ceil(filteredEmployee.length / limit)}
+              </span>
+              <button
+                className="btn btn-primary"
+                disabled={page >= Math.ceil(filteredEmployee.length / limit)}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

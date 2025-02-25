@@ -7,6 +7,8 @@ function Client() {
   const [listOfClient, setListOfClient] = useState([]);
   const [buttonStates, setButtonStates] = useState({});
   const [searchFilter, setSearchFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -110,6 +112,11 @@ function Client() {
     });
   };
 
+  const paginatedClient = filteredClient.slice(
+    (page - 1) * limit,
+    page * limit
+  );
+
   return (
     <>
       <div className="container">
@@ -142,7 +149,7 @@ function Client() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {filteredClient.map((client, index) => {
+                {paginatedClient.map((client, index) => {
                   const isActive = buttonStates[client.id] === "Active";
                   return (
                     <tr key={client.id}>
@@ -199,6 +206,26 @@ function Client() {
                 })}
               </tbody>
             </table>
+            {/* Pagination Clients */}
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="btn btn-primary"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {Math.ceil(filteredClient.length / limit)}
+              </span>
+              <button
+                className="btn btn-primary"
+                disabled={page >= Math.ceil(filteredClient.length / limit)}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>
