@@ -10,6 +10,8 @@ function Client() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
 
+  const [selectedIds, setSelectedIds] = useState([]);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { day: "numeric", month: "long", year: "numeric" };
@@ -117,6 +119,73 @@ function Client() {
     page * limit
   );
 
+  const handleCheckboxChange = (id) => {
+    setSelectedIds((prevSelected) => {
+      if (prevSelected.includes(id)) {
+        // If already selected, remove it
+        return prevSelected.filter((selectedId) => selectedId !== id);
+      } else {
+        // Otherwise, add it
+        return [...prevSelected, id];
+      }
+    });
+  };
+
+  const handleCheckAll = (e) => {
+    if (e.target.checked) {
+      // Select all currently visible (paginated) clients
+      const allVisibleIds = paginatedClient.map((client) => client.id);
+      setSelectedIds(allVisibleIds);
+    } else {
+      // Uncheck all
+      setSelectedIds([]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Make DELETE requests in parallel for each selected ID
+        const deleteRequests = selectedIds.map((id) =>
+          axios.delete(`http://localhost:3001/clients/${id}`)
+        );
+
+        Promise.all(deleteRequests)
+          .then(() => {
+            setListOfClient((prevClients) =>
+              prevClients.filter((client) => !selectedIds.includes(client.id))
+            );
+            setSelectedIds([]);
+            Swal.fire({
+              title: "Deleted!",
+              icon: "success",
+            });
+          })
+          .catch((error) => {
+            toast.error("Error Deleting Data!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Deleting Data:", error);
+          });
+      }
+    });
+  };
+
   return (
     <>
       <div className="container">
@@ -131,12 +200,27 @@ function Client() {
             onChange={handleSearchChange}
           />
         </form>
+        <div className="mt-3 d-flex align-items-center">
+          <input
+            type="checkbox"
+            checked={
+              paginatedClient.length > 0 &&
+              selectedIds.length === paginatedClient.length
+            }
+            onChange={handleCheckAll}
+          />
+          <label className="ms-2">Check all</label>
+          <div className="ms-2">
+            <button onClick={handleDeleteSelected}>Delete</button>
+          </div>
+        </div>
 
         <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
                 <tr>
+                  <th></th>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
                   <th>Alamat</th>
@@ -153,6 +237,13 @@ function Client() {
                   const isActive = buttonStates[client.id] === "Active";
                   return (
                     <tr key={client.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(client.id)}
+                          onChange={() => handleCheckboxChange(client.id)}
+                        />
+                      </td>
                       <td>{index + 1}</td>
                       <td>{client.client_name}</td>
                       <td>{client.address}</td>
