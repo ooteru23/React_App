@@ -275,27 +275,27 @@ function Employee() {
                 })}
               </tbody>
             </table>
-            {/* Pagination Employees */}
-            <div className="d-flex justify-content-between align-items-center">
-              <button
-                className="btn btn-primary"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                Previous
-              </button>
-              <span>
-                Page {page} of {Math.ceil(filteredEmployee.length / limit)}
-              </span>
-              <button
-                className="btn btn-primary"
-                disabled={page >= Math.ceil(filteredEmployee.length / limit)}
-                onClick={() => setPage(page + 1)}
-              >
-                Next
-              </button>
-            </div>
           </div>
+        </div>
+        {/* Pagination Employees */}
+        <div className="d-flex justify-content-between align-items-center">
+          <button
+            className="btn btn-primary"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {Math.ceil(filteredEmployee.length / limit)}
+          </span>
+          <button
+            className="btn btn-primary"
+            disabled={page >= Math.ceil(filteredEmployee.length / limit)}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
     </>

@@ -261,7 +261,7 @@ function Client() {
                           readOnly
                         />
                         <button
-                          className="btn btn-primary"
+                          className="btn btn-primary custom"
                           htmlFor={`btn-check-active-${client.id}`}
                           onClick={() =>
                             handleActiveAndInactive(client.id, "Active")
@@ -277,7 +277,7 @@ function Client() {
                           readOnly
                         />
                         <button
-                          className="btn btn-danger"
+                          className="btn btn-danger custom"
                           htmlFor={`btn-check-inactive-${client.id}`}
                           onClick={() =>
                             handleActiveAndInactive(client.id, "Inactive")
@@ -286,7 +286,7 @@ function Client() {
                           Inactive
                         </button>
                         <button
-                          className="btn btn-danger"
+                          className="btn btn-danger custom"
                           onClick={() => handleDelete(client.id)}
                         >
                           Delete
@@ -297,27 +297,27 @@ function Client() {
                 })}
               </tbody>
             </table>
-            {/* Pagination Clients */}
-            <div className="d-flex justify-content-between align-items-center">
-              <button
-                className="btn btn-primary"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                Previous
-              </button>
-              <span>
-                Page {page} of {Math.ceil(filteredClient.length / limit)}
-              </span>
-              <button
-                className="btn btn-primary"
-                disabled={page >= Math.ceil(filteredClient.length / limit)}
-                onClick={() => setPage(page + 1)}
-              >
-                Next
-              </button>
-            </div>
           </div>
+        </div>
+        {/* Pagination Clients */}
+        <div className="d-flex justify-content-between align-items-center">
+          <button
+            className="btn btn-primary"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {Math.ceil(filteredClient.length / limit)}
+          </span>
+          <button
+            className="btn btn-primary"
+            disabled={page >= Math.ceil(filteredClient.length / limit)}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
       <ToastContainer />

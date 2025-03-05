@@ -392,7 +392,7 @@ function Offer() {
           />
         </form>
 
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -453,27 +453,27 @@ function Offer() {
                 })}
               </tbody>
             </table>
-            {/* Pagination Offers */}
-            <div className="d-flex justify-content-between align-items-center">
-              <button
-                className="btn btn-primary"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                Previous
-              </button>
-              <span>
-                Page {page} of {Math.ceil(filteredOffer.length / limit)}
-              </span>
-              <button
-                className="btn btn-primary"
-                disabled={page >= Math.ceil(filteredOffer.length / limit)}
-                onClick={() => setPage(page + 1)}
-              >
-                Next
-              </button>
-            </div>
           </div>
+        </div>
+        {/* Pagination Offers */}
+        <div className="d-flex justify-content-between align-items-center">
+          <button
+            className="btn btn-primary"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {Math.ceil(filteredOffer.length / limit)}
+          </span>
+          <button
+            className="btn btn-primary"
+            disabled={page >= Math.ceil(filteredOffer.length / limit)}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
     </>

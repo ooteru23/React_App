@@ -27,7 +27,7 @@ body {
   cursor: pointer;
 }
 
-table {
+/* table {
   width: 100%;
   table-layout: fixed;
 }
@@ -36,7 +36,7 @@ th,
 td {
   word-wrap: break-word;
   overflow-wrap: break-word;
-}
+} */
 
 /* btn-check:focus + .btn-primary,
 .btn-primary:focus {
