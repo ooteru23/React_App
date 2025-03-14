@@ -1,6 +1,6 @@
 {
   "name": "bonus-calculation-app",
-  "homepage": "https://ooteru23.github.io/",
+  "homepage": "https://ooteru23.github.io/React_App",
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "start": "nodemon server.js",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
