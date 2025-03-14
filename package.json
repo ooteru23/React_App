@@ -1,6 +1,6 @@
 {
   "name": "bonus-calculation-app",
-  "homepage":" https://ooteru23.github.io/React_App/",
+  "homepage": "https://ooteru23.github.io/React_App/",
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
@@ -9,7 +9,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
@@ -42,6 +44,7 @@
     "eslint-plugin-react": "^7.36.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
+    "gh-pages": "^6.3.0",
     "globals": "^15.9.0",
     "vite": "^5.4.1"
   },
