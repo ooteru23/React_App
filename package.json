@@ -1,9 +1,9 @@
 {
   "name": "bonus-calculation-app",
+  "homepage":" https://ooteru23.github.io/React_App/",
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
-  "homepage": "./",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
