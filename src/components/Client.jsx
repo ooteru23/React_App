@@ -215,7 +215,7 @@ function Client() {
           </div>
         </div>
 
-        <div className="row mt-3 table-responsive">
+        <div className="row mt-3">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -265,8 +265,7 @@ function Client() {
                           htmlFor={`btn-check-active-${client.id}`}
                           onClick={() =>
                             handleActiveAndInactive(client.id, "Active")
-                          }
-                        >
+                          }>
                           Active
                         </button>
                         <input
@@ -281,14 +280,12 @@ function Client() {
                           htmlFor={`btn-check-inactive-${client.id}`}
                           onClick={() =>
                             handleActiveAndInactive(client.id, "Inactive")
-                          }
-                        >
+                          }>
                           Inactive
                         </button>
                         <button
                           className="btn btn-danger custom"
-                          onClick={() => handleDelete(client.id)}
-                        >
+                          onClick={() => handleDelete(client.id)}>
                           Delete
                         </button>
                       </td>
@@ -304,8 +301,7 @@ function Client() {
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+            onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
@@ -314,8 +310,7 @@ function Client() {
           <button
             className="btn btn-primary"
             disabled={page >= Math.ceil(filteredClient.length / limit)}
-            onClick={() => setPage(page + 1)}
-          >
+            onClick={() => setPage(page + 1)}>
             Next
           </button>
         </div>

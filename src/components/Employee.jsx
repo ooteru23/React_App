@@ -192,8 +192,7 @@ function Employee() {
               className="form-select"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              required
-            >
+              required>
               <option value="" hidden>
                 --Please Choose Option--
               </option>
@@ -234,7 +233,7 @@ function Employee() {
           />
         </form>
 
-        <div className="row mt-3 table-responsive">
+        <div className="row mt-3">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -259,14 +258,12 @@ function Employee() {
                       <td>
                         <button
                           className="btn btn-warning"
-                          onClick={() => handleEdit(employee.id)}
-                        >
+                          onClick={() => handleEdit(employee.id)}>
                           Edit
                         </button>
                         <button
                           className="btn btn-danger"
-                          onClick={() => handleDelete(employee.id)}
-                        >
+                          onClick={() => handleDelete(employee.id)}>
                           Delete
                         </button>
                       </td>
@@ -282,8 +279,7 @@ function Employee() {
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+            onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
@@ -292,8 +288,7 @@ function Employee() {
           <button
             className="btn btn-primary"
             disabled={page >= Math.ceil(filteredEmployee.length / limit)}
-            onClick={() => setPage(page + 1)}
-          >
+            onClick={() => setPage(page + 1)}>
             Next
           </button>
         </div>

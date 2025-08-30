@@ -428,16 +428,14 @@ function Bonus() {
         <form
           className="row g-3"
           onSubmit={handleCalculate}
-          onKeyDown={handleEnter}
-        >
+          onKeyDown={handleEnter}>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="employee_name"> Nama Karyawan </label>
             <select
               className="form-select"
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
-              required
-            >
+              required>
               <option value="" hidden>
                 --Please Choose Options--
               </option>
@@ -463,8 +461,7 @@ function Bonus() {
               className="form-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              required
-            >
+              required>
               <option value="" hidden>
                 --Please Choose Options--
               </option>
@@ -480,7 +477,7 @@ function Bonus() {
           </div>
         </form>
         <br />
-        <div className="row mt-3 table-responsive">
+        <div className="row mt-3">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -515,8 +512,7 @@ function Bonus() {
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+            onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
@@ -525,8 +521,7 @@ function Bonus() {
           <button
             className="btn btn-primary"
             disabled={page >= Math.ceil(tableData.length / limit)}
-            onClick={() => setPage(page + 1)}
-          >
+            onClick={() => setPage(page + 1)}>
             Next
           </button>
         </div>

@@ -8,10 +8,6 @@ body {
   background-color: whitesmoke;
   background-position: center;
   border-radius: 25px;
-  -webkit-border-radius: 25px;
-  -moz-border-radius: 25px;
-  -ms-border-radius: 25px;
-  -o-border-radius: 25px;
 }
 
 .btn {

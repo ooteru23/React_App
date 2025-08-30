@@ -224,8 +224,7 @@ function Control() {
               className="form-select"
               value={selectedEmployee}
               onChange={handleEmployeeChange}
-              required
-            >
+              required>
               <option value="" hidden>
                 ---Please Choose Options---
               </option>
@@ -253,7 +252,7 @@ function Control() {
           </div>
         </form>
         <br />
-        <div className="row mt-3 table-responsive">
+        <div className="row mt-3">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -300,8 +299,7 @@ function Control() {
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+            onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
@@ -310,8 +308,7 @@ function Control() {
           <button
             className="btn btn-primary"
             disabled={page >= Math.ceil(filteredControl.length / limit)}
-            onClick={() => setPage(page + 1)}
-          >
+            onClick={() => setPage(page + 1)}>
             Next
           </button>
         </div>

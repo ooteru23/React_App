@@ -81,16 +81,14 @@ function Report() {
         <form
           className="row g-3"
           onSubmit={handleViewReport}
-          onKeyDown={handleEnter}
-        >
+          onKeyDown={handleEnter}>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="month"> Bulan </label>
             <select
               className="form-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              required
-            >
+              required>
               <option value="" hidden>
                 ---Please Choose Options---
               </option>
@@ -115,7 +113,7 @@ function Report() {
           </div>
         </form>
         <br />
-        <div className="row mt-3 table-responsive" hidden={!showTable}>
+        <div className="row mt-3" hidden={!showTable}>
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -187,8 +185,7 @@ function Report() {
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+            onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
@@ -197,8 +194,7 @@ function Report() {
           <button
             className="btn btn-primary"
             disabled={page >= Math.ceil(filteredReport.length / limit)}
-            onClick={() => setPage(page + 1)}
-          >
+            onClick={() => setPage(page + 1)}>
             Next
           </button>
         </div>

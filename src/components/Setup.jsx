@@ -457,8 +457,7 @@ function Setup() {
               className="form-select"
               value={client_candidate}
               onChange={handleClientChange}
-              required
-            >
+              required>
               <option value="" hidden>
                 ---Please Choose Options---
               </option>
@@ -512,8 +511,7 @@ function Setup() {
             <select
               className="form-select"
               value={employee1}
-              onChange={handleEmployee1Change}
-            >
+              onChange={handleEmployee1Change}>
               <option value="" hidden>
                 ---Please Choose Option---
               </option>
@@ -529,8 +527,7 @@ function Setup() {
             <select
               className="form-select"
               value={employee2}
-              onChange={handleEmployee2Change}
-            >
+              onChange={handleEmployee2Change}>
               <option value="" hidden>
                 ---Please Choose Option---
               </option>
@@ -611,7 +608,7 @@ function Setup() {
           />
         </form>
 
-        <div className="row mt-3 table-responsive">
+        <div className="row mt-3">
           <div className="col 12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
@@ -648,14 +645,12 @@ function Setup() {
                       <td>
                         <button
                           className="btn btn-warning"
-                          onClick={() => handleEdit(setup.id)}
-                        >
+                          onClick={() => handleEdit(setup.id)}>
                           Edit
                         </button>
                         <button
                           className="btn btn-danger"
-                          onClick={() => handleDelete(setup.id)}
-                        >
+                          onClick={() => handleDelete(setup.id)}>
                           Delete
                         </button>
                       </td>
@@ -678,8 +673,7 @@ function Setup() {
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-          >
+            onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
@@ -688,8 +682,7 @@ function Setup() {
           <button
             className="btn btn-primary"
             disabled={page >= Math.ceil(filteredSetup.length / limit)}
-            onClick={() => setPage(page + 1)}
-          >
+            onClick={() => setPage(page + 1)}>
             Next
           </button>
         </div>
