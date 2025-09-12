@@ -59,7 +59,7 @@ function Setup() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/setups/")
+      .get("http://localhost:3001/setups")
       .then((response) => {
         setListOfSetup(response.data);
         setAddedClient(response.data.map((setup) => setup.client_candidate));

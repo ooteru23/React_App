@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { getById as getEmployeeById, update as updateEmployee } from "../../services/employeesApi";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -13,13 +13,12 @@ function EditEmployee() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3001/employees/${id}`)
-      .then((response) => {
-        setName(response.data.name);
-        setJobTitle(response.data.job_title);
-        setStatus(response.data.status);
-        setSalary(response.data.salary);
+    getEmployeeById(id)
+      .then((data) => {
+        setName(data.name);
+        setJobTitle(data.job_title);
+        setStatus(data.status);
+        setSalary(data.salary);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -39,13 +38,12 @@ function EditEmployee() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .put(`http://localhost:3001/employees/${id}`, updatedEmployee)
+        updateEmployee(id, updatedEmployee)
           .then((response) => {
             navigate("/employee", {
               state: { message: "Updated!" },
             });
-            console.log("Data Updated", response.data);
+            console.log("Data Updated", response);
           })
           .catch((error) => {
             toast.error("Error Updating Data!", {

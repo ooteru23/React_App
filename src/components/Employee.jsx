@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  list as listEmployees,
+  create as createEmployee,
+  remove as removeEmployee,
+} from "../services/employeesApi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -17,11 +21,8 @@ function Employee() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
-      })
+    listEmployees()
+      .then((rows) => setListOfEmployee(rows))
       .catch((error) => {
         console.error("Error Getting Data:", error);
       });
@@ -56,10 +57,14 @@ function Employee() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3001/employees", newEmployee)
-          .then((response) => {
-            console.log("Data Added:", response.data);
+        createEmployee(newEmployee)
+          .then((created) => {
+            setListOfEmployee((prev) => [...prev, created]);
+            setName("");
+            setJobTitle("");
+            setStatus("");
+            setSalary("");
+            Swal.fire({ title: "Saved!", icon: "success" });
           })
           .catch((error) => {
             toast.error("Error Adding Data", {
@@ -73,13 +78,6 @@ function Employee() {
             });
             console.error("Error Adding Data", error);
           });
-        Swal.fire({
-          title: "Saved!",
-          icon: "success",
-          didClose: () => {
-            window.location.reload();
-          },
-        });
       }
     });
   };
@@ -94,13 +92,12 @@ function Employee() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:3001/employees/${id}`)
+        removeEmployee(id)
           .then((response) => {
-            setListOfEmployee(
-              listOfEmployee.filter((employee) => employee.id !== id)
+            setListOfEmployee((prev) =>
+              prev.filter((employee) => employee.id !== id)
             );
-            console.log("Data Deleted:", response.data);
+            console.log("Data Deleted:", response);
           })
           .catch((error) => {
             toast.error("Error Deleting Data!", {

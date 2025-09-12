@@ -1,0 +1,1 @@
+Patching IPC handlers to return plain JSON for structured cloning
