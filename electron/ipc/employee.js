@@ -7,7 +7,10 @@ function registerEmployeeHandlers(db) {
   });
 
   ipcMain.handle("employees:create", async (_e, payload) => {
-    if (!payload?.name) throw new Error("name is required");
+    const requiredFields = ["name", "job_title", "status", "salary"];
+    for (const field of requiredFields) {
+      if (!payload?.[field]) throw new Error(`${field} is required`);
+    }
     const row = await db.Employees.create(payload);
     return row.toJSON();
   });

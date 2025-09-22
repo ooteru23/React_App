@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { getById as getOfferById, update as updateOffer } from "../../services/offersApi";
+import { create as createClient } from "../../services/clientsApi";
+import { list as listEmployees } from "../../services/employeesApi";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -20,13 +22,13 @@ function EditOffer() {
   const [price, setPrice] = useState("");
   const [information, setInformation] = useState("");
   const [offer_status, setOfferStatus] = useState("");
+  const [initialStatus, setInitialStatus] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
+    listEmployees()
+      .then((rows) => {
+        setListOfEmployee(rows);
       })
       .catch((error) => {
         console.error("Error Fetching Data:", error);
@@ -34,22 +36,22 @@ function EditOffer() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3001/offers/${id}`)
-      .then((response) => {
-        setCreatorName(response.data.creator_name);
-        setClientCandidate(response.data.client_candidate);
-        setMarketingName(response.data.marketing_name);
-        setAddress(response.data.address);
-        setDate(response.data.date);
-        setValidDate(response.data.valid_date);
-        setPic(response.data.pic);
-        setTelephone(response.data.telephone);
-        setService(response.data.service);
-        setPeriodTime(response.data.period_time);
-        setPrice(response.data.price);
-        setInformation(response.data.information);
-        setOfferStatus(response.data.offer_status);
+    getOfferById(id)
+      .then((data) => {
+        setCreatorName(data.creator_name);
+        setClientCandidate(data.client_candidate);
+        setMarketingName(data.marketing_name);
+        setAddress(data.address);
+        setDate(data.date);
+        setValidDate(data.valid_date);
+        setPic(data.pic);
+        setTelephone(data.telephone);
+        setService(data.service);
+        setPeriodTime(data.period_time);
+        setPrice(data.price);
+        setInformation(data.information);
+        setOfferStatus(data.offer_status);
+        setInitialStatus(data.offer_status);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -74,6 +76,54 @@ function EditOffer() {
       offer_status,
     };
 
+    const submitUpdate = async () => {
+      try {
+        await updateOffer(id, updatedOffer);
+
+        if (
+          updatedOffer.offer_status === "Accepted" &&
+          initialStatus !== "Accepted"
+        ) {
+          try {
+            await createClient({
+              client_name: client_candidate,
+              address,
+              pic,
+              telephone,
+              service,
+              contract_value: price,
+              client_status: "Active",
+            });
+          } catch (error) {
+            console.error("Error creating client from offer:", error);
+            toast.error("Gagal membuat client dari penawaran.", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            });
+          }
+        }
+
+        navigate("/offer", {
+          state: { message: "Updated!" },
+        });
+        console.log("Data Updated");
+      } catch (error) {
+        toast.error("Error Updating Data!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        console.error("Error Updating Data:", error);
+      }
+    };
+
     Swal.fire({
       title: "Apakah Kamu Yakin?",
       icon: "warning",
@@ -83,25 +133,7 @@ function EditOffer() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .put(`http://localhost:3001/offers/${id}`, updatedOffer)
-          .then((response) => {
-            navigate("/offer", {
-              state: { message: "Updated!" },
-            });
-            console.log("Data Updated", response.data);
-          })
-          .catch((error) => {
-            toast.error("Error Updating Data!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-            });
-            console.error("Error Updating Data:", error);
-          });
+        submitUpdate();
       }
     });
   };

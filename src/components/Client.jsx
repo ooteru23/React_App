@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+﻿import React, { useState, useEffect } from "react";
+import {
+  list as listClients,
+  remove as removeClient,
+  update as updateClient,
+} from "../services/clientsApi";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -19,10 +23,9 @@ function Client() {
   };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/clients/")
-      .then((response) => {
-        const clients = response.data;
+    listClients()
+      .then((rows) => {
+        const clients = Array.isArray(rows) ? rows : (rows && rows.data ? rows.data : []);
         setListOfClient(clients);
 
         const initialStates = {};
@@ -37,10 +40,7 @@ function Client() {
   }, []);
 
   const handleActiveAndInactive = (id, newStatus) => {
-    axios
-      .put(`http://localhost:3001/clients/${id}`, {
-        client_status: newStatus,
-      })
+    updateClient(id, { client_status: newStatus })
       .then(() => {
         setListOfClient((prevClients) =>
           prevClients.map((client) =>
@@ -62,19 +62,23 @@ function Client() {
     setSearchFilter(e.target.value);
   };
 
+  const searchTerm = searchFilter.toLowerCase();
+
   const filteredClient = listOfClient.filter((client) => {
     const formattedValidDate = formatDate(client.createdAt);
 
     return (
-      client.client_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      client.address.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      client.pic.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      client.telephone.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      client.service.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      client.contract_value
+      client.client_name?.toLowerCase().includes(searchTerm) ||
+      client.address?.toLowerCase().includes(searchTerm) ||
+      client.pic?.toLowerCase().includes(searchTerm) ||
+      String(client.telephone ?? "")
         .toLowerCase()
-        .includes(searchFilter.toLowerCase()) ||
-      formattedValidDate.toLowerCase().includes(searchFilter.toLowerCase())
+        .includes(searchTerm) ||
+      client.service?.toLowerCase().includes(searchTerm) ||
+      String(client.contract_value ?? "")
+        .toLowerCase()
+        .includes(searchTerm) ||
+      formattedValidDate.toLowerCase().includes(searchTerm)
     );
   });
 
@@ -88,11 +92,14 @@ function Client() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:3001/clients/${id}`)
+        removeClient(id)
           .then((response) => {
             setListOfClient(listOfClient.filter((client) => client.id !== id));
-            console.log("Data Deleted:", response.data);
+            console.log("Data Deleted:", response);
+            Swal.fire({
+              title: "Deleted!",
+              icon: "success",
+            });
           })
           .catch((error) => {
             toast.error("Error Deleting Data!", {
@@ -106,10 +113,6 @@ function Client() {
             });
             console.error("Error Deleting Data:", error);
           });
-        Swal.fire({
-          title: "Deleted!",
-          icon: "success",
-        });
       }
     });
   };
@@ -155,9 +158,7 @@ function Client() {
     }).then((result) => {
       if (result.isConfirmed) {
         // Make DELETE requests in parallel for each selected ID
-        const deleteRequests = selectedIds.map((id) =>
-          axios.delete(`http://localhost:3001/clients/${id}`)
-        );
+        const deleteRequests = selectedIds.map((id) => removeClient(id));
 
         Promise.all(deleteRequests)
           .then(() => {
@@ -320,3 +321,7 @@ function Client() {
   );
 }
 export default Client;
+
+
+
+

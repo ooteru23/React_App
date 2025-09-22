@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  getById as getSetupById,
+  update as updateSetup,
+} from "../../services/setupsApi";
+import { list as listEmployees } from "../../services/employeesApi";
+import { list as listClient } from "../../services/clientsApi";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -21,10 +26,24 @@ function EditSetup() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
+    listEmployees()
+      .then((rows) => {
+        const active = rows.filter((e) => e.status !== "Inactive");
+        setListOfEmployee(active);
+      })
+      .catch((error) => {
+        console.error("Error Fetching Data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    listClient()
+      .then((rows) => {
+        setListOfClient(rows);
+        const activeClient = rows.filter(
+          (client) => client.client_status !== "Inactive"
+        );
+        setFilteredClient(activeClient);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -32,30 +51,18 @@ function EditSetup() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/clients")
-      .then((response) => {
-        setListOfClient(response.data);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get(`http://localhost:3001/setups/${id}`)
-      .then((response) => {
-        setClientCandidate(response.data.client_candidate);
-        setContractValue(response.data.contract_value);
-        setCommissionPrice(response.data.commission_price);
-        setSoftwarePrice(response.data.software_price);
-        setEmployee1(response.data.employee1);
-        setEmployee2(response.data.employee2);
-        setPercent1(response.data.percent1);
-        setPercent2(response.data.percent2);
-        setNetValue1(response.data.net_value1);
-        setNetValue2(response.data.net_value2);
+    getSetupById(id)
+      .then((data) => {
+        setClientCandidate(data.client_candidate);
+        setContractValue(data.contract_value);
+        setCommissionPrice(data.commission_price);
+        setSoftwarePrice(data.software_price);
+        setEmployee1(data.employee1);
+        setEmployee2(data.employee2);
+        setPercent1(data.percent1);
+        setPercent2(data.percent2);
+        setNetValue1(data.net_value1);
+        setNetValue2(data.net_value2);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -85,13 +92,12 @@ function EditSetup() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .put(`http://localhost:3001/setups/${id}`, updatedSetup)
+        updateSetup(id, updatedSetup)
           .then((response) => {
             navigate("/project-setup", {
-              state: { message: " Updated! " },
+              state: { message: "Updated!" },
             });
-            console.log("Data Updated:", response.data);
+            console.log("Data Updated:", response);
           })
           .catch((error) => {
             toast.error("Error Updating Data!", {
@@ -303,8 +309,7 @@ function EditSetup() {
               className="form-select"
               value={client_candidate}
               onChange={handleClientChange}
-              required
-            >
+              required>
               {listOfClient.map((client) => (
                 <option key={client.id} value={client.client_name}>
                   {client.client_name}
@@ -355,8 +360,7 @@ function EditSetup() {
               className="form-select"
               required
               value={employee1}
-              onChange={handleEmployee1Change}
-            >
+              onChange={handleEmployee1Change}>
               {filteredEmployee1.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}
@@ -370,8 +374,7 @@ function EditSetup() {
               className="form-select"
               value={employee2}
               onChange={handleEmployee2Change}
-              required
-            >
+              required>
               {filteredEmployee2.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}

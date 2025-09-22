@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+﻿import React, { useState, useEffect } from "react";
+import {
+  list as listOffers,
+  create as createOffer,
+  remove as removeOffer,
+} from "../services/offersApi";
+import { format, parseISO, isValid } from "date-fns";
+import { id } from "date-fns/locale";
+import { list as listEmployees } from "../services/employeesApi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -26,24 +33,35 @@ function Offer() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { day: "numeric", month: "long", year: "numeric" };
-    return date.toLocaleDateString(undefined, options);
-  };
+  const formatDateValue = (value, pattern) => {
+    if (!value) {
+      return "";
+    }
 
-  const formatPeriodTime = (dateString) => {
-    const date = new Date(dateString);
-    const options = { month: "long", year: "numeric" };
-    return date.toLocaleDateString(undefined, options);
+    let parsedValue = value;
+
+    if (typeof value === "string") {
+      const normalizedValue = /^\d{4}-\d{2}$/.test(value)
+        ? `${value}-01`
+        : value;
+
+      parsedValue = parseISO(normalizedValue);
+    } else if (!(value instanceof Date)) {
+      parsedValue = new Date(value);
+    }
+
+    if (isValid(parsedValue)) {
+      return format(parsedValue, pattern, { locale: id });
+    }
+
+    return typeof value === "string" ? value : String(value);
   };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
-        const activeEmployees = response.data.filter(
+    listEmployees()
+      .then((rows) => {
+        setListOfEmployee(rows);
+        const activeEmployees = rows.filter(
           (employee) => employee.status !== "Inactive"
         );
         setFilteredEmployee(activeEmployees);
@@ -54,10 +72,9 @@ function Offer() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/offers")
-      .then((response) => {
-        setListOfOffer(response.data);
+    listOffers()
+      .then((rows) => {
+        setListOfOffer(rows);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -101,10 +118,23 @@ function Offer() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3001/offers", newOffer)
-          .then((response) => {
-            console.log("Data Added:", response.data);
+        createOffer(newOffer)
+          .then((created) => {
+            setListOfOffer((prev) => [...prev, created]);
+            setCreatorName("");
+            setClientCandidate("");
+            setMarketingName("");
+            setAddress("");
+            setDate("");
+            setValidDate("");
+            setPic("");
+            setTelephone("");
+            setService("");
+            setPeriodTime("");
+            setPrice("");
+            setInformation("");
+            console.log("Data Added:", created);
+            Swal.fire({ title: "Saved!", icon: "success" });
           })
           .catch((error) => {
             toast.error("Error Adding Data!", {
@@ -118,13 +148,6 @@ function Offer() {
             });
             console.error("Error Adding Data", error);
           });
-        Swal.fire({
-          title: "Saved!",
-          icon: "success",
-          didClose: () => {
-            window.location.reload();
-          },
-        });
       }
     });
   };
@@ -139,11 +162,14 @@ function Offer() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:3001/offers/${id}`)
+        removeOffer(id)
           .then((response) => {
-            setListOfOffer(listOfOffer.filter((offer) => offer.id !== id));
-            console.log("Data Deleted:", response.data);
+            setListOfOffer((prev) => prev.filter((offer) => offer.id !== id));
+            console.log("Data Deleted:", response);
+            Swal.fire({
+              title: "Deleted!",
+              icon: "success",
+            });
           })
           .catch((error) => {
             toast.error("Error Deleting Data!", {
@@ -157,10 +183,6 @@ function Offer() {
             });
             console.error("Error Deleting Data:", error);
           });
-        Swal.fire({
-          title: "Deleted!",
-          icon: "success",
-        });
       }
     });
   };
@@ -175,9 +197,15 @@ function Offer() {
 
   const filteredOffer = listOfOffer
     .filter((offer) => {
-      const formattedDate = formatDate(offer.date);
-      const formattedValidDate = formatDate(offer.valid_date);
-      const formattedPeriodTime = formatPeriodTime(offer.period_time);
+      const formattedDate = formatDateValue(offer.date, "d MMMM yyyy");
+      const formattedValidDate = formatDateValue(
+        offer.valid_date,
+        "d MMMM yyyy"
+      );
+      const formattedPeriodTime = formatDateValue(
+        offer.period_time,
+        "MMMM yyyy"
+      );
 
       return (
         offer.creator_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -191,29 +219,27 @@ function Offer() {
         formattedDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
         formattedValidDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
         offer.pic.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        offer.telephone.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        String(offer.telephone)
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
         offer.service.toLowerCase().includes(searchFilter.toLowerCase()) ||
         formattedPeriodTime
           .toLowerCase()
           .includes(searchFilter.toLowerCase()) ||
-        offer.price.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        String(offer.price)
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
         offer.information.toLowerCase().includes(searchFilter.toLowerCase()) ||
         offer.offer_status.toLowerCase().includes(searchFilter.toLowerCase())
       );
     })
     .sort((a, b) => {
-      if (
-        (a.status === "Rejected" || a.status === "Nothing") &&
-        b.status !== "Rejected" &&
-        b.status !== "Nothing"
-      )
-        return 1;
-      if (
-        (a.status === "Rejected" || a.status === "Nothing") &&
-        b.status !== "Rejected" &&
-        b.status !== "Nothing"
-      )
-        return -1;
+      const aLow =
+        a.offer_status === "Rejected" || a.offer_status === "Nothing";
+      const bLow =
+        b.offer_status === "Rejected" || b.offer_status === "Nothing";
+      if (aLow && !bLow) return 1;
+      if (!aLow && bLow) return -1;
       return 0;
     });
 
@@ -422,12 +448,14 @@ function Offer() {
                       <td>{offer.client_candidate}</td>
                       <td>{offer.marketing_name}</td>
                       <td>{offer.address}</td>
-                      <td>{formatDate(offer.date)}</td>
-                      <td>{formatDate(offer.valid_date)}</td>
+                      <td>{formatDateValue(offer.date, "d MMMM yyyy")}</td>
+                      <td>
+                        {formatDateValue(offer.valid_date, "d MMMM yyyy")}
+                      </td>
                       <td>{offer.pic}</td>
                       <td>{offer.telephone}</td>
                       <td>{offer.service}</td>
-                      <td>{formatPeriodTime(offer.period_time)}</td>
+                      <td>{formatDateValue(offer.period_time, "MMMM yyyy")}</td>
                       <td>{offer.price}</td>
                       <td>{offer.information}</td>
                       <td>{offer.offer_status}</td>

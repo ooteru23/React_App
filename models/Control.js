@@ -3,24 +3,26 @@ module.exports = (sequelize, DataTypes) => {
     client_name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
     },
-    employee1: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    employee2: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    net_value1: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    net_value2: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+
+    // employee1: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+    // employee2: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+    // net_value1: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+    // net_value2: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    // },
+
     month_jan: {
       type: DataTypes.STRING,
       allowNull: false,

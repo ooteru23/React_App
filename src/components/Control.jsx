@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  list as listControls,
+  create as createControl,
+} from "../services/controlsApi";
+import { list as listEmployees } from "../services/employeesApi";
+import { list as listClients } from "../services/clientsApi";
+import { list as listOffers } from "../services/offersApi";
 import { ToastContainer, toast } from "react-toastify";
 import Select from "react-select";
 import Swal from "sweetalert2";
@@ -9,6 +15,7 @@ function Control() {
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfClient, setListOfClient] = useState([]);
   const [listOfOffer, setListOfOffer] = useState([]);
+
   const [filteredControl, setFilteredControl] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
@@ -87,33 +94,10 @@ function Control() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/offers")
-      .then((response) => {
-        setListOfOffer(response.data);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:3001/clients/")
-      .then((response) => {
-        setListOfClient(response.data);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
-        const activeEmployees = response.data.filter(
+    listEmployees()
+      .then((rows) => {
+        setListOfEmployee(rows);
+        const activeEmployees = rows.filter(
           (employee) => employee.status !== "Inactive"
         );
         setFilteredEmployee(activeEmployees);
@@ -124,10 +108,29 @@ function Control() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/controls/adjusted-data/")
-      .then((response) => {
-        setListOfControl(response.data);
+    listControls()
+      .then((rows) => {
+        setListOfControl(rows);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    listOffers()
+      .then((rows) => {
+        setListOfOffer(rows);
+      })
+      .catch((error) => {
+        console.error("Error Getting Data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    listClients()
+      .then((rows) => {
+        setListOfClient(rows);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -146,10 +149,10 @@ function Control() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3001/controls/update-data", filteredControl)
-          .then((response) => {
-            console.log("Data Added:", response.data);
+        createControl(filteredControl)
+          .then((created) => {
+            setListOfControl((prev) => [...prev, created]);
+            console.log("Data Added:", created);
             setIsEditing(false);
           })
           .catch((error) => {

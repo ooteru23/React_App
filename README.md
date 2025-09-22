@@ -82,6 +82,7 @@ db.Sequelize = Sequelize;
 
 module.exports = db;
 
+//package json lama
 {
 "name": "bonus-calculation-app",
 "homepage": "https://ooteru23.github.io/React_App",
@@ -154,3 +155,125 @@ module.exports = db;
 "dev:ui": "vite",
 "dev:electron": "cross-env VITE_DEV=true electron .",
 "dev:all": "concurrently -k \"npm:dev:ui\" \"wait-on http://localhost:5173 && npm:dev:electron\"",
+
+//fungsi save ke database control
+const handleSaveToControl = (e) => {
+e.preventDefault();
+
+    const saveToControl = filteredSetup.map((setup) => ({
+      client_name: setup.client_candidate,
+      employee1: setup.employee1,
+      employee2: setup.employee2,
+      net_value1: setup.net_value1,
+      net_value2: setup.net_value2,
+    }));
+
+    Swal.fire({
+      title: "Apakah Kamu Yakin?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .post("http://localhost:3001/controls/creating-data", saveToControl)
+          .then((response) => {
+            console.log("Data Added:", response.data);
+          })
+          .catch((error) => {
+            toast.error("Error Adding Data", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+            console.error("Error Adding Data", error);
+          });
+        Swal.fire({
+          title: "Saved!",
+          icon: "success",
+          didClose: () => {
+            window.location.reload();
+          },
+        });
+      }
+    });
+
+};
+
+// fungsi control lama
+useEffect(() => {
+axios
+.get("http://localhost:3001/offers")
+.then((response) => {
+setListOfOffer(response.data);
+})
+.catch((error) => {
+console.error("Error Getting Data:", error);
+});
+}, []);
+
+useEffect(() => {
+axios
+.get("http://localhost:3001/clients/")
+.then((response) => {
+setListOfClient(response.data);
+})
+.catch((error) => {
+console.error("Error Getting Data:", error);
+});
+}, []);
+
+employee1: {
+type: DataTypes.STRING,
+allowNull: false,
+},
+employee2: {
+type: DataTypes.STRING,
+allowNull: false,
+},
+net_value1: {
+type: DataTypes.STRING,
+allowNull: false,
+},
+net_value2: {
+type: DataTypes.STRING,
+allowNull: false,
+},
+
+const handleCheckData = (e) => {
+e.preventDefault();
+
+    const filtered = listOfControl
+      .filter((control) => {
+        const client = listOfClient.find(
+          (client) => client.client_name === control.client_name
+        );
+        return client && client.client_status === "Active";
+      })
+      .filter((control) => {
+        const isEmployeeMatch =
+          !selectedEmployee ||
+          control.employee1 === selectedEmployee ||
+          control.employee2 === selectedEmployee;
+
+        const isYearMatch = listOfOffer.some(
+          (offer) =>
+            offer.client_candidate === control.client_name &&
+            new Date(offer.period_time).getFullYear() ===
+              Number(currentYear, 10)
+        );
+        return isEmployeeMatch && isYearMatch;
+      });
+
+    setFilteredControl(filtered);
+
+};
+
+const [listOfClient, setListOfClient] = useState([]);
+const [listOfOffer, setListOfOffer] = useState([]);

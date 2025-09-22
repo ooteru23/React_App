@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+﻿import React, { useState, useEffect } from "react";
+import {
+  list as listSetups,
+  create as createSetup,
+  remove as removeSetup,
+} from "../services/setupsApi";
+import { list as listEmployees } from "../services/employeesApi";
+import { list as listClient } from "../services/clientsApi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
 function Setup() {
-  const [listOfEmployee, setListOfEmployee] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [filteredClient, setFilteredClient] = useState([]);
-  const [listOfClient, setListOfClient] = useState([]);
   const [listOfSetup, setListOfSetup] = useState([]);
   const [addedClient, setAddedClient] = useState([]);
   const [client_candidate, setClientCandidate] = useState("");
@@ -23,16 +27,14 @@ function Setup() {
   const [net_value2, setNetValue2] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const limit = 5;
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
-        const activeEmployees = response.data.filter(
+    listEmployees()
+      .then((rows) => {
+        const activeEmployees = rows.filter(
           (employee) => employee.status !== "Inactive"
         );
         setFilteredEmployee(activeEmployees);
@@ -43,11 +45,9 @@ function Setup() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/clients/")
-      .then((response) => {
-        setListOfClient(response.data);
-        const activeClient = response.data.filter(
+    listClient()
+      .then((rows) => {
+        const activeClient = rows.filter(
           (client) => client.client_status !== "Inactive"
         );
         setFilteredClient(activeClient);
@@ -58,11 +58,10 @@ function Setup() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/setups")
-      .then((response) => {
-        setListOfSetup(response.data);
-        setAddedClient(response.data.map((setup) => setup.client_candidate));
+    listSetups()
+      .then((rows) => {
+        setListOfSetup(rows);
+        setAddedClient(rows.map((setup) => setup.client_candidate));
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -103,11 +102,22 @@ function Setup() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3001/setups", newSetup)
-          .then((response) => {
-            setAddedClient([...addedClient, client_candidate]);
-            console.log("Data Added:", response.data);
+        createSetup(newSetup)
+          .then((created) => {
+            setListOfSetup((prev) => [...prev, created]);
+            setClientCandidate("");
+            setContractValue("");
+            setCommissionPrice("");
+            setSoftwarePrice("");
+            setEmployee1("");
+            setEmployee2("");
+            setPercent1("%");
+            setPercent2("%");
+            setNetValue1("");
+            setNetValue2("");
+            setAddedClient((prev) => [...prev, client_candidate]);
+            console.log("Data Added:", created);
+            Swal.fire({ title: "Saved!", icon: "success" });
           })
           .catch((error) => {
             toast.error("Error Adding Data!", {
@@ -121,61 +131,6 @@ function Setup() {
             });
             console.error("Error Adding Data", error);
           });
-        Swal.fire({
-          title: "Saved!",
-          icon: "success",
-          didClose: () => {
-            window.location.reload();
-          },
-        });
-      }
-    });
-  };
-
-  const handleSaveToControl = (e) => {
-    e.preventDefault();
-
-    const saveToControl = filteredSetup.map((setup) => ({
-      client_name: setup.client_candidate,
-      employee1: setup.employee1,
-      employee2: setup.employee2,
-      net_value1: setup.net_value1,
-      net_value2: setup.net_value2,
-    }));
-
-    Swal.fire({
-      title: "Apakah Kamu Yakin?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3001/controls/creating-data", saveToControl)
-          .then((response) => {
-            console.log("Data Added:", response.data);
-          })
-          .catch((error) => {
-            toast.error("Error Adding Data", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            });
-            console.error("Error Adding Data", error);
-          });
-        Swal.fire({
-          title: "Saved!",
-          icon: "success",
-          didClose: () => {
-            window.location.reload();
-          },
-        });
       }
     });
   };
@@ -190,13 +145,18 @@ function Setup() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:3001/setups/${id}`)
+        removeSetup(id)
           .then((response) => {
-            const deletedSetup = listOfSetup.filter((setup) => setup.id !== id);
-            setListOfSetup(deletedSetup);
-            setAddedClient(deletedSetup.map((setup) => setup.client_candidate));
-            console.log("Data Deleted:", response.data);
+            setListOfSetup((prev) => {
+              const nextSetups = prev.filter((setup) => setup.id !== id);
+              setAddedClient(nextSetups.map((setup) => setup.client_candidate));
+              return nextSetups;
+            });
+            console.log("Data Deleted:", response);
+            Swal.fire({
+              title: "Deleted!",
+              icon: "success",
+            });
           })
           .catch((error) => {
             toast.error("Error Deleting Data!", {
@@ -210,13 +170,57 @@ function Setup() {
             });
             console.error("Error Deleting Data:", error);
           });
-        Swal.fire({
-          title: "Deleted!",
-          icon: "success",
-        });
       }
     });
   };
+
+  // const handleSaveToControl = (e) => {
+  //   e.preventDefault();
+
+  //   const saveToControl = filteredSetup.map((setup) => ({
+  //     client_name: setup.client_candidate,
+  //     employee1: setup.employee1,
+  //     employee2: setup.employee2,
+  //     net_value1: setup.net_value1,
+  //     net_value2: setup.net_value2,
+  //   }));
+
+  //   Swal.fire({
+  //     title: "Apakah Kamu Yakin?",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#3085d6",
+  //     cancelButtonColor: "#d33",
+  //     confirmButtonText: "Yes",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       axios
+  //         .post("http://localhost:3001/controls/creating-data", saveToControl)
+  //         .then((response) => {
+  //           console.log("Data Added:", response.data);
+  //         })
+  //         .catch((error) => {
+  //           toast.error("Error Adding Data", {
+  //             position: "top-right",
+  //             autoClose: 3000,
+  //             hideProgressBar: false,
+  //             closeOnClick: true,
+  //             pauseOnHover: true,
+  //             draggable: true,
+  //             progress: undefined,
+  //           });
+  //           console.error("Error Adding Data", error);
+  //         });
+  //       Swal.fire({
+  //         title: "Saved!",
+  //         icon: "success",
+  //         didClose: () => {
+  //           window.location.reload();
+  //         },
+  //       });
+  //     }
+  //   });
+  // };
 
   const handleEdit = (id) => {
     navigate(`/project-setup/edit/${id}`);
@@ -238,21 +242,29 @@ function Setup() {
         setup.client_candidate
           .toLowerCase()
           .includes(searchFilter.toLowerCase()) ||
-        setup.contract_value
+        String(setup.contract_value)
           .toLowerCase()
           .includes(searchFilter.toLowerCase()) ||
-        setup.commission_price
+        String(setup.commission_price)
           .toLowerCase()
           .includes(searchFilter.toLowerCase()) ||
-        setup.software_price
+        String(setup.software_price)
           .toLowerCase()
           .includes(searchFilter.toLowerCase()) ||
         setup.employee1.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        setup.percent1.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        String(setup.percent1)
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
         setup.employee2.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        setup.percent2.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        setup.net_value1.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        setup.net_value2.toLowerCase().includes(searchFilter.toLowerCase())
+        String(setup.percent2)
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        String(setup.net_value1)
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase()) ||
+        String(setup.net_value2)
+          .toLowerCase()
+          .includes(searchFilter.toLowerCase())
     );
 
   const paginatedSetup = filteredSetup.slice((page - 1) * limit, page * limit);
@@ -619,10 +631,10 @@ function Setup() {
                   <th>Biaya Komisi</th>
                   <th>Harga Software</th>
                   <th>Karyawan 1</th>
-                  <th>Karyawan 2</th>
                   <th>Persentase 1</th>
-                  <th>Persentase 2</th>
                   <th>Net Value 1</th>
+                  <th>Karyawan 2</th>
+                  <th>Persentase 2</th>
                   <th>Net Value 2</th>
                   <th>Actions</th>
                 </tr>
@@ -637,10 +649,10 @@ function Setup() {
                       <td>{setup.commission_price}</td>
                       <td>{setup.software_price}</td>
                       <td>{setup.employee1}</td>
-                      <td>{setup.employee2}</td>
                       <td>{setup.percent1}</td>
-                      <td>{setup.percent2}</td>
                       <td>{setup.net_value1}</td>
+                      <td>{setup.employee2}</td>
+                      <td>{setup.percent2}</td>
                       <td>{setup.net_value2}</td>
                       <td>
                         <button
@@ -661,13 +673,6 @@ function Setup() {
             </table>
           </div>
         </div>
-        <form className="row g-3" onSubmit={handleSaveToControl}>
-          <div className="col-lg-12 mt-3">
-            <button className="btn btn-success" type="submit">
-              Save
-            </button>
-          </div>
-        </form>
         {/* Pagination Setups */}
         <div className="d-flex justify-content-between align-items-center">
           <button
@@ -691,3 +696,7 @@ function Setup() {
   );
 }
 export default Setup;
+
+
+
+

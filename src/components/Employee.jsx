@@ -64,6 +64,7 @@ function Employee() {
             setJobTitle("");
             setStatus("");
             setSalary("");
+            console.log("Data Added:", created);
             Swal.fire({ title: "Saved!", icon: "success" });
           })
           .catch((error) => {
@@ -98,6 +99,10 @@ function Employee() {
               prev.filter((employee) => employee.id !== id)
             );
             console.log("Data Deleted:", response);
+            Swal.fire({
+              title: "Deleted!",
+              icon: "success",
+            });
           })
           .catch((error) => {
             toast.error("Error Deleting Data!", {
@@ -111,10 +116,6 @@ function Employee() {
             });
             console.error("Error Deleting Data:", error);
           });
-        Swal.fire({
-          title: "Deleted!",
-          icon: "success",
-        });
       }
     });
   };

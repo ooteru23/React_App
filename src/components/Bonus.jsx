@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  list as listBonuses,
+  create as createBonus,
+} from "../services/bonusesApi";
+import { list as listEmployees } from "../services/employeesApi";
+import { list as listClients } from "../services/clientsApi";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -7,7 +12,7 @@ function Bonus() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfBonus, setListOfBonus] = useState([]);
-  const [listOfReport, setListOfReport] = useState([]);
+  // const [listOfReport, setListOfReport] = useState([]);
   const [listOfClient, setListOfClient] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
   const [currentYear, setCurrentYear] = useState([]);
@@ -50,11 +55,10 @@ function Bonus() {
   }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/employees")
-      .then((response) => {
-        setListOfEmployee(response.data);
-        const activeEmployees = response.data.filter(
+    listEmployees()
+      .then((rows) => {
+        setListOfEmployee(rows);
+        const activeEmployees = rows.filter(
           (employee) => employee.status !== "Inactive"
         );
         setFilteredEmployee(activeEmployees);
@@ -64,44 +68,42 @@ function Bonus() {
       });
   }, []);
 
+  // useEffect(() => {
+  //   axios
+  //     .get("http://localhost:3001/controls")
+  //     .then((response) => {
+  //       setListOfControl(response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error Getting Data:", error);
+  //     });
+  // }, []);
+
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/controls")
-      .then((response) => {
-        setListOfControl(response.data);
+    listBonuses()
+      .then((rows) => {
+        setListOfBonus(rows);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
       });
   }, []);
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:3001/bonuses/")
-      .then((response) => {
-        setListOfBonus(response.data);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("http://localhost:3001/reports")
+  //     .then((response) => {
+  //       setListOfReport(response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error Getting Data:", error);
+  //     });
+  // }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/reports")
-      .then((response) => {
-        setListOfReport(response.data);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:3001/clients/")
-      .then((response) => {
-        setListOfClient(response.data);
+    listClients()
+      .then((rows) => {
+        setListOfClient(rows);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -159,21 +161,21 @@ function Bonus() {
     //   return;
     // }
 
-    const addToReport = bonusTableData.map((data) => ({
-      employee_name: data.employee,
-      month: data.month,
-      salary_deduction: salaryDeduction,
-      month_ontime: onTime,
-      month_late: late,
-      bonus_component: bonusComponent,
-      percent_ontime: percentOnTime,
-      percent_late: percentLate,
-      total_ontime: totalOnTime,
-      total_late: totalLate,
-      bonus_ontime: bonusOnTime,
-      bonus_late: bonusLate,
-      total: total,
-    }));
+    // const addToReport = bonusTableData.map((data) => ({
+    //   employee_name: data.employee,
+    //   month: data.month,
+    //   salary_deduction: salaryDeduction,
+    //   month_ontime: onTime,
+    //   month_late: late,
+    //   bonus_component: bonusComponent,
+    //   percent_ontime: percentOnTime,
+    //   percent_late: percentLate,
+    //   total_ontime: totalOnTime,
+    //   total_late: totalLate,
+    //   bonus_ontime: bonusOnTime,
+    //   bonus_late: bonusLate,
+    //   total: total,
+    // }));
 
     Swal.fire({
       title: "Apakah Kamu Yakin?",
@@ -184,8 +186,7 @@ function Bonus() {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3001/bonuses", addToBonus)
+        createBonus(addToBonus)
           .then((response) => {
             console.log("Data Added:", response.data);
           })
@@ -202,21 +203,21 @@ function Bonus() {
             console.error("Error Saving Data", error);
           });
 
-        axios
-          .post("http://localhost:3001/reports", addToReport)
-          .then((response) => {
-            console.log("Data Added:", response.data);
-          })
-          .catch(() => {
-            console.error("Error Saving Data", error);
-          });
-        Swal.fire({
-          title: "Saved!",
-          icon: "success",
-          didClose: () => {
-            window.location.reload();
-          },
-        });
+        // axios
+        //   .post("http://localhost:3001/reports", addToReport)
+        //   .then((response) => {
+        //     console.log("Data Added:", response.data);
+        //   })
+        //   .catch(() => {
+        //     console.error("Error Saving Data", error);
+        //   });
+        // Swal.fire({
+        //   title: "Saved!",
+        //   icon: "success",
+        //   didClose: () => {
+        //     window.location.reload();
+        //   },
+        // });
       }
     });
   };
@@ -483,7 +484,6 @@ function Bonus() {
               <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
-                  <th hidden>Nama Karyawan</th>
                   <th>Nama Klien</th>
                   <th>Bulan</th>
                   <th>Status Pekerjaan</th>
@@ -495,7 +495,6 @@ function Bonus() {
                 {paginatedBonus.map((data, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td hidden>{data.employee}</td>
                     <td>{data.clientName}</td>
                     <td>{data.month}</td>
                     <td>{data.status}</td>
