@@ -1,209 +1,329 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   list as listControls,
   create as createControl,
 } from "../services/controlsApi";
 import { list as listEmployees } from "../services/employeesApi";
 import { list as listClients } from "../services/clientsApi";
-import { list as listOffers } from "../services/offersApi";
+import { list as listSetups } from "../services/setupsApi";
 import { ToastContainer, toast } from "react-toastify";
 import Select from "react-select";
 import Swal from "sweetalert2";
 
+const MONTHS = [
+  { key: "month_jan", name: "January" },
+  { key: "month_feb", name: "February" },
+  { key: "month_mar", name: "March" },
+  { key: "month_apr", name: "April" },
+  { key: "month_may", name: "May" },
+  { key: "month_jun", name: "June" },
+  { key: "month_jul", name: "July" },
+  { key: "month_aug", name: "August" },
+  { key: "month_sep", name: "September" },
+  { key: "month_oct", name: "October" },
+  { key: "month_nov", name: "November" },
+  { key: "month_dec", name: "December" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "ON TIME", label: "ON TIME" },
+  { value: "LATE", label: "LATE" },
+];
+
 function Control() {
-  const [listOfEmployee, setListOfEmployee] = useState([]);
   const [listOfControl, setListOfControl] = useState([]);
   const [listOfClient, setListOfClient] = useState([]);
-  const [listOfOffer, setListOfOffer] = useState([]);
-
+  const [listOfSetup, setListOfSetup] = useState([]);
   const [filteredControl, setFilteredControl] = useState([]);
   const [filteredEmployee, setFilteredEmployee] = useState([]);
-  const [currentYear, setCurrentYear] = useState([]);
+  const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear().toString());
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [isEditing, setIsEditing] = useState(true);
-  const [currentMonth] = useState(
-    new Date().toLocaleString("default", { month: "long" })
-  );
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
 
-  const months = [
-    { key: "month_jan", name: "January" },
-    { key: "month_feb", name: "February" },
-    { key: "month_mar", name: "March" },
-    { key: "month_apr", name: "April" },
-    { key: "month_may", name: "May" },
-    { key: "month_jun", name: "June" },
-    { key: "month_jul", name: "July" },
-    { key: "month_aug", name: "August" },
-    { key: "month_sep", name: "September" },
-    { key: "month_oct", name: "October" },
-    { key: "month_nov", name: "November" },
-    { key: "month_dec", name: "December" },
-  ];
+  const currentMonth = useMemo(
+    () => new Date().toLocaleString("default", { month: "long" }),
+    []
+  );
 
-  const options = [
-    { value: "ON TIME", label: "ON TIME" },
-    { value: "LATE", label: "LATE" },
-  ];
-
-  const handleSelectChange = (control, monthKey, selectedOption) => {
-    control[monthKey] = selectedOption ? selectedOption.value : "ON PROCESS";
-    setFilteredControl([...filteredControl]);
-  };
-
-  const renderMonthDropdowns = (control) => {
-    const currentMonthIndex = months.findIndex(
-      (month) => month.name === currentMonth
-    );
-
-    return months.slice(0, currentMonthIndex + 1).map((month) => {
-      const monthValue = control[month.key];
-
-      return (
-        <td key={month.key} style={{ minWidth: "110px" }}>
-          {isEditing && monthValue === "ON PROCESS" ? (
-            <Select
-              options={options}
-              value={{
-                value: monthValue,
-                label: monthValue,
-              }}
-              onChange={(selectedOption) =>
-                handleSelectChange(control, month.key, selectedOption)
-              }
-              placeholder="Select"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  minWidth: "110px",
-                }),
-              }}
-            />
-          ) : (
-            <span>{monthValue}</span>
-          )}
-        </td>
-      );
-    });
-  };
-
-  useEffect(() => {
-    const year = new Date().getFullYear();
-    setCurrentYear(year);
-  }, []);
+  const limit = 5;
 
   useEffect(() => {
     listEmployees()
       .then((rows) => {
-        setListOfEmployee(rows);
-        const activeEmployees = rows.filter(
-          (employee) => employee.status !== "Inactive"
-        );
+        const activeEmployees = rows.filter((employee) => employee.status !== "Inactive");
         setFilteredEmployee(activeEmployees);
       })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
+      .catch((error) => console.error("Error getting employees:", error));
   }, []);
 
   useEffect(() => {
     listControls()
       .then((rows) => {
         setListOfControl(rows);
+        setFilteredControl(rows);
       })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    listOffers()
-      .then((rows) => {
-        setListOfOffer(rows);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
+      .catch((error) => console.error("Error getting controls:", error));
   }, []);
 
   useEffect(() => {
     listClients()
-      .then((rows) => {
-        setListOfClient(rows);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
+      .then((rows) => setListOfClient(rows))
+      .catch((error) => console.error("Error getting clients:", error));
   }, []);
 
-  const handleSave = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    listSetups()
+      .then((rows) => setListOfSetup(rows))
+      .catch((error) => console.error("Error getting setups:", error));
+  }, []);
 
-    Swal.fire({
+  const handleSelectChange = (controlId, monthKey, selectedOption) => {
+    const value = selectedOption ? selectedOption.value : "ON PROCESS";
+
+    const applyUpdate = (controls) =>
+      controls.map((control) =>
+        control.id === controlId ? { ...control, [monthKey]: value } : control
+      );
+
+    setListOfControl((prev) => applyUpdate(prev));
+    setFilteredControl((prev) => applyUpdate(prev));
+  };
+
+  const renderMonthDropdowns = (control) => {
+    const currentMonthIndex = MONTHS.findIndex((month) => month.name === currentMonth);
+
+    return MONTHS.slice(0, currentMonthIndex + 1).map((month) => (
+      <td key={month.key} style={{ minWidth: "110px" }}>
+        {isEditing && control[month.key] === "ON PROCESS" ? (
+          <Select
+            options={STATUS_OPTIONS}
+            value={{ value: control[month.key], label: control[month.key] }}
+            onChange={(option) => handleSelectChange(control.id, month.key, option)}
+            placeholder="Select"
+            styles={{
+              control: (base) => ({
+                ...base,
+                minWidth: "110px",
+              }),
+            }}
+          />
+        ) : (
+          <span>{control[month.key]}</span>
+        )}
+      </td>
+    ));
+  };
+
+  const saveControls = async (controlsToSave) => {
+    const responses = await Promise.all(
+      controlsToSave.map((control) =>
+        createControl({
+          client_name: control.client_name,
+          month_jan: control.month_jan ?? "ON PROCESS",
+          month_feb: control.month_feb ?? "ON PROCESS",
+          month_mar: control.month_mar ?? "ON PROCESS",
+          month_apr: control.month_apr ?? "ON PROCESS",
+          month_may: control.month_may ?? "ON PROCESS",
+          month_jun: control.month_jun ?? "ON PROCESS",
+          month_jul: control.month_jul ?? "ON PROCESS",
+          month_aug: control.month_aug ?? "ON PROCESS",
+          month_sep: control.month_sep ?? "ON PROCESS",
+          month_oct: control.month_oct ?? "ON PROCESS",
+          month_nov: control.month_nov ?? "ON PROCESS",
+          month_dec: control.month_dec ?? "ON PROCESS",
+        })
+      )
+    );
+
+    return Array.isArray(responses[0]) ? responses.flat() : responses;
+  };
+
+  const handleSave = async (event) => {
+    event.preventDefault();
+
+    if (filteredControl.length === 0) {
+      toast.info("Tidak ada data kontrol yang dipilih.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const confirmation = await Swal.fire({
       title: "Apakah Kamu Yakin?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        createControl(filteredControl)
-          .then((created) => {
-            setListOfControl((prev) => [...prev, created]);
-            console.log("Data Added:", created);
-            setIsEditing(false);
-          })
-          .catch((error) => {
-            toast.error("Failed to save data. Please try again.", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            });
-            console.error("Error saving data:", error);
-          });
-        Swal.fire({
-          title: "Saved!",
-          icon: "success",
-          didClose: () => {
-            window.location.reload();
-          },
-        });
-      }
     });
-  };
 
-  const handleCheckData = (e) => {
-    e.preventDefault();
+    if (!confirmation.isConfirmed) {
+      return;
+    }
 
-    const filtered = listOfControl
-      .filter((control) => {
-        const client = listOfClient.find(
-          (client) => client.client_name === control.client_name
-        );
-        return client && client.client_status === "Active";
-      })
-      .filter((control) => {
-        const isEmployeeMatch =
-          !selectedEmployee ||
-          control.employee1 === selectedEmployee ||
-          control.employee2 === selectedEmployee;
+    try {
+      const savedControls = await saveControls(filteredControl);
 
-        const isYearMatch = listOfOffer.some(
-          (offer) =>
-            offer.client_candidate === control.client_name &&
-            new Date(offer.period_time).getFullYear() ===
-              Number(currentYear, 10)
-        );
-        return isEmployeeMatch && isYearMatch;
+      setListOfControl((prev) => {
+        const merged = new Map(prev.map((control) => [control.client_name, control]));
+        savedControls.forEach((control) => merged.set(control.client_name, control));
+        return Array.from(merged.values());
       });
 
-    setFilteredControl(filtered);
+      const lookup = new Map(savedControls.map((control) => [control.client_name, control]));
+      setFilteredControl((prev) =>
+        prev.map((control) => lookup.get(control.client_name) ?? control)
+      );
+
+      Swal.fire({ title: "Saved!", icon: "success" });
+    } catch (error) {
+      toast.error("Failed to save data. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      console.error("Error saving data:", error);
+    }
+  };
+
+  const deriveSetupYear = (setup) => {
+    if (setup.setup_year) {
+      const year = parseInt(setup.setup_year, 10);
+      if (!Number.isNaN(year)) {
+        return year;
+      }
+    }
+
+    if (setup.period_time) {
+      const year = parseInt(String(setup.period_time).slice(0, 4), 10);
+      if (!Number.isNaN(year)) {
+        return year;
+      }
+    }
+
+    if (setup.createdAt) {
+      return new Date(setup.createdAt).getFullYear();
+    }
+
+    if (setup.updatedAt) {
+      return new Date(setup.updatedAt).getFullYear();
+    }
+
+    return null;
+  };
+
+  const handleCheckData = (event) => {
+    event.preventDefault();
+
+    if (!selectedEmployee) {
+      toast.warn("Silakan pilih karyawan terlebih dahulu.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (listOfSetup.length === 0) {
+      toast.info("Data setup belum tersedia.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const parsedYear = parseInt(currentYear, 10);
+    const targetYear = Number.isNaN(parsedYear)
+      ? new Date().getFullYear()
+      : parsedYear;
+
+    const activeClients = new Set(
+      listOfClient
+        .filter((client) => client.client_status !== "Inactive")
+        .map((client) => client.client_name)
+    );
+
+    const matchingSetups = listOfSetup.filter((setup) => {
+      const setupYear = deriveSetupYear(setup);
+      if (setupYear !== targetYear) {
+        return false;
+      }
+
+      const employeeOne = (setup.employee1 || "").toLowerCase();
+      const employeeTwo = (setup.employee2 || "").toLowerCase();
+      const normalizedEmployee = selectedEmployee.toLowerCase();
+
+      return (
+        employeeOne === normalizedEmployee || employeeTwo === normalizedEmployee
+      );
+    });
+
+    const activeMatchingSetups = matchingSetups.filter((setup) =>
+      activeClients.has(setup.client_candidate)
+    );
+
+    if (activeMatchingSetups.length === 0) {
+      setFilteredControl([]);
+      setPage(1);
+      toast.info("Data setup tidak ditemukan untuk kriteria tersebut.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const controlByClient = new Map(
+      listOfControl.map((control) => [control.client_name, control])
+    );
+
+    const createDraftControl = (setup) => {
+      const draft = {
+        id: `draft-${setup.id}`,
+        client_name: setup.client_candidate,
+      };
+
+      MONTHS.forEach(({ key }) => {
+        draft[key] = "ON PROCESS";
+      });
+
+      return draft;
+    };
+
+    const missingControls = [];
+    const nextControls = activeMatchingSetups.map((setup) => {
+      const existing = controlByClient.get(setup.client_candidate);
+      if (existing) {
+        return existing;
+      }
+
+      const draft = createDraftControl(setup);
+      missingControls.push(draft);
+      return draft;
+    });
+
+    if (missingControls.length > 0) {
+      setListOfControl((prev) => {
+        const existingNames = new Set(prev.map((control) => control.client_name));
+        const merged = [...prev];
+
+        missingControls.forEach((draft) => {
+          if (!existingNames.has(draft.client_name)) {
+            merged.push(draft);
+            existingNames.add(draft.client_name);
+          }
+        });
+
+        return merged;
+      });
+    }
+
+    setFilteredControl(nextControls);
+    setPage(1);
   };
 
   const paginatedControl = filteredControl.slice(
@@ -211,8 +331,8 @@ function Control() {
     page * limit
   );
 
-  const handleEmployeeChange = (e) => {
-    setSelectedEmployee(e.target.value);
+  const handleEmployeeChange = (event) => {
+    setSelectedEmployee(event.target.value);
   };
 
   return (
@@ -244,7 +364,7 @@ function Control() {
               type="text"
               className="form-control"
               value={currentYear}
-              onChange={(e) => setCurrentYear(e.target.value)}
+              onChange={(event) => setCurrentYear(event.target.value)}
             />
           </div>
           <div className="col-lg-12 mt-3">
@@ -255,37 +375,26 @@ function Control() {
           </div>
         </form>
         <br />
-        <div className="row mt-3">
+        <div className="row mt-3 table-responsive">
           <div className="col-12">
             <table className="table table-bordered border border-secondary">
               <thead className="text-center align-middle">
                 <tr>
                   <th>Nomor</th>
                   <th>Nama Klien</th>
-                  <th>January</th>
-                  <th>February</th>
-                  <th>March</th>
-                  <th>April</th>
-                  <th>May</th>
-                  <th>June</th>
-                  <th>July</th>
-                  <th>August</th>
-                  <th>September</th>
-                  <th>October</th>
-                  <th>November</th>
-                  <th>December</th>
+                  {MONTHS.map((month) => (
+                    <th key={month.key}>{month.name}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {paginatedControl.map((control, index) => {
-                  return (
-                    <tr key={control.id}>
-                      <td>{index + 1}</td>
-                      <td>{control.client_name}</td>
-                      {renderMonthDropdowns(control)}
-                    </tr>
-                  );
-                })}
+                {paginatedControl.map((control, index) => (
+                  <tr key={control.id}>
+                    <td>{index + 1}</td>
+                    <td>{control.client_name}</td>
+                    {renderMonthDropdowns(control)}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -297,7 +406,6 @@ function Control() {
             </button>
           </div>
         </form>
-        {/* Pagination Controls */}
         <div className="d-flex justify-content-between align-items-center">
           <button
             className="btn btn-primary"
@@ -321,3 +429,6 @@ function Control() {
 }
 
 export default Control;
+
+
+

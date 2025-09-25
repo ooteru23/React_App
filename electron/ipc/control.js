@@ -1,4 +1,4 @@
-const { ipcMain } = require("electron");
+﻿const { ipcMain } = require("electron");
 
 function registerControlHandlers(db) {
   ipcMain.handle("controls:list", async () => {
@@ -8,7 +8,7 @@ function registerControlHandlers(db) {
 
   ipcMain.handle("controls:create", async (_e, payload) => {
     const requiredFields = [
-      "employee_name",
+      "client_name",
       "month_jan",
       "month_feb",
       "month_mar",
@@ -22,12 +22,41 @@ function registerControlHandlers(db) {
       "month_nov",
       "month_dec",
     ];
-    for (const field of requiredFields) {
-      if (!payload?.[field]) throw new Error(`${field} is required`);
+
+    const items = Array.isArray(payload) ? payload : [payload];
+
+    for (const item of items) {
+      for (const field of requiredFields) {
+        if (!item?.[field]) throw new Error(`${field} is required`);
+      }
     }
-    const row = await db.Controls.create(payload);
-    return row.toJSON();
+
+    const results = [];
+
+    for (const item of items) {
+      const [row, created] = await db.Controls.findOrCreate({
+        where: { client_name: item.client_name },
+        defaults: item,
+      });
+
+      if (!created) {
+        await row.update(item);
+      }
+
+      if (typeof row.toJSON === "function") {
+        results.push(row.toJSON());
+      } else if (typeof row.get === "function") {
+        results.push(row.get({ plain: true }));
+      } else {
+        results.push(row);
+      }
+    }
+
+    return results;
   });
 }
 
 module.exports = { registerControlHandlers };
+
+
+

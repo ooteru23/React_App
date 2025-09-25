@@ -40,10 +40,6 @@ function EditSetup() {
     listClient()
       .then((rows) => {
         setListOfClient(rows);
-        const activeClient = rows.filter(
-          (client) => client.client_status !== "Inactive"
-        );
-        setFilteredClient(activeClient);
       })
       .catch((error) => {
         console.error("Error Getting Data:", error);
@@ -382,7 +378,7 @@ function EditSetup() {
               ))}
             </select>
           </div>
-          <div className="form-group col-md-6 mt-1">
+          <div className="form-group col-md-6 mt-1 input-wrapper">
             <label htmlFor="percent1">Persentase 1</label>
             <input
               type="text"
@@ -395,7 +391,7 @@ function EditSetup() {
             />
           </div>
 
-          <div className="form-group col-md-6 mt-1">
+          <div className="form-group col-md-6 mt-1 input-wrapper">
             <label htmlFor="percent2">Persentase 2</label>
             <input
               type="text"

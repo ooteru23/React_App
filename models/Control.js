@@ -1,27 +1,10 @@
-module.exports = (sequelize, DataTypes) => {
+﻿module.exports = (sequelize, DataTypes) => {
   const Controls = sequelize.define("Controls", {
     client_name: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-
-    // employee1: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
-    // employee2: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
-    // net_value1: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
-    // net_value2: {
-    //   type: DataTypes.STRING,
-    //   allowNull: false,
-    // },
 
     month_jan: {
       type: DataTypes.STRING,

@@ -21,8 +21,8 @@ function Setup() {
   const [software_price, setSoftwarePrice] = useState("");
   const [employee1, setEmployee1] = useState("");
   const [employee2, setEmployee2] = useState("");
-  const [percent1, setPercent1] = useState("%");
-  const [percent2, setPercent2] = useState("%");
+  const [percent1, setPercent1] = useState("");
+  const [percent2, setPercent2] = useState("");
   const [net_value1, setNetValue1] = useState("");
   const [net_value2, setNetValue2] = useState("");
   const [searchFilter, setSearchFilter] = useState("");
@@ -111,8 +111,8 @@ function Setup() {
             setSoftwarePrice("");
             setEmployee1("");
             setEmployee2("");
-            setPercent1("%");
-            setPercent2("%");
+            setPercent1("");
+            setPercent2("");
             setNetValue1("");
             setNetValue2("");
             setAddedClient((prev) => [...prev, client_candidate]);
@@ -173,54 +173,6 @@ function Setup() {
       }
     });
   };
-
-  // const handleSaveToControl = (e) => {
-  //   e.preventDefault();
-
-  //   const saveToControl = filteredSetup.map((setup) => ({
-  //     client_name: setup.client_candidate,
-  //     employee1: setup.employee1,
-  //     employee2: setup.employee2,
-  //     net_value1: setup.net_value1,
-  //     net_value2: setup.net_value2,
-  //   }));
-
-  //   Swal.fire({
-  //     title: "Apakah Kamu Yakin?",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#3085d6",
-  //     cancelButtonColor: "#d33",
-  //     confirmButtonText: "Yes",
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       axios
-  //         .post("http://localhost:3001/controls/creating-data", saveToControl)
-  //         .then((response) => {
-  //           console.log("Data Added:", response.data);
-  //         })
-  //         .catch((error) => {
-  //           toast.error("Error Adding Data", {
-  //             position: "top-right",
-  //             autoClose: 3000,
-  //             hideProgressBar: false,
-  //             closeOnClick: true,
-  //             pauseOnHover: true,
-  //             draggable: true,
-  //             progress: undefined,
-  //           });
-  //           console.error("Error Adding Data", error);
-  //         });
-  //       Swal.fire({
-  //         title: "Saved!",
-  //         icon: "success",
-  //         didClose: () => {
-  //           window.location.reload();
-  //         },
-  //       });
-  //     }
-  //   });
-  // };
 
   const handleEdit = (id) => {
     navigate(`/project-setup/edit/${id}`);
@@ -550,7 +502,7 @@ function Setup() {
               ))}
             </select>
           </div>
-          <div className="form-group col-md-6 mt-1">
+          <div className="form-group col-md-6 mt-1 input-wrapper">
             <label htmlFor="percent1">Persentase 1</label>
             <input
               type="text"
@@ -562,7 +514,7 @@ function Setup() {
               required
             />
           </div>
-          <div className="form-group col-md-6 mt-1">
+          <div className="form-group col-md-6 mt-1 input-wrapper">
             <label htmlFor="percent2">Persentase 2</label>
             <input
               type="text"
@@ -649,10 +601,10 @@ function Setup() {
                       <td>{setup.commission_price}</td>
                       <td>{setup.software_price}</td>
                       <td>{setup.employee1}</td>
-                      <td>{setup.percent1}</td>
+                      <td>{setup.percent1 ? `${setup.percent1}%` : ""}</td>
                       <td>{setup.net_value1}</td>
                       <td>{setup.employee2}</td>
-                      <td>{setup.percent2}</td>
+                      <td>{setup.percent2 ? `${setup.percent2}%` : ""}</td>
                       <td>{setup.net_value2}</td>
                       <td>
                         <button
@@ -696,7 +648,3 @@ function Setup() {
   );
 }
 export default Setup;
-
-
-
-

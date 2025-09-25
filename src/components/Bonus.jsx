@@ -1,446 +1,509 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   list as listBonuses,
   create as createBonus,
 } from "../services/bonusesApi";
 import { list as listEmployees } from "../services/employeesApi";
 import { list as listClients } from "../services/clientsApi";
+import { list as listControls } from "../services/controlsApi";
+import { list as listSetups } from "../services/setupsApi";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
+const MONTHS = [
+  { key: "month_jan", name: "January" },
+  { key: "month_feb", name: "February" },
+  { key: "month_mar", name: "March" },
+  { key: "month_apr", name: "April" },
+  { key: "month_may", name: "May" },
+  { key: "month_jun", name: "June" },
+  { key: "month_jul", name: "July" },
+  { key: "month_aug", name: "August" },
+  { key: "month_sep", name: "September" },
+  { key: "month_oct", name: "October" },
+  { key: "month_nov", name: "November" },
+  { key: "month_dec", name: "December" },
+];
+
+const STATUS_WITH_BONUS = new Set(["ON TIME", "LATE"]);
+
+const resolveYear = (value) => {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? new Date().getFullYear() : parsed;
+};
+
+const parseCurrency = (value) => {
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? 0 : value;
+  }
+
+  if (!value) {
+    return 0;
+  }
+
+  const numeric = value.toString().replace(/[^\d-]/g, "");
+  return Number(numeric || 0);
+};
+
+const formatCurrency = (value) => parseCurrency(value).toLocaleString("id-ID");
+
+const createBonusKey = (client, month, employee) => `${client}|${month}|${employee}`;
+
 function Bonus() {
-  const [listOfEmployee, setListOfEmployee] = useState([]);
-  const [listOfControl, setListOfControl] = useState([]);
-  const [listOfBonus, setListOfBonus] = useState([]);
-  // const [listOfReport, setListOfReport] = useState([]);
-  const [listOfClient, setListOfClient] = useState([]);
-  const [filteredEmployee, setFilteredEmployee] = useState([]);
-  const [currentYear, setCurrentYear] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const [employees, setEmployees] = useState([]);
+  const [controls, setControls] = useState([]);
+  const [setups, setSetups] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [bonuses, setBonuses] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [bonusTableData, setBonusTableData] = useState([]);
-  const [salaryDeduction, setSalaryDeduction] = useState(0);
-  const [onTime, setOnTime] = useState(0);
-  const [late, setLate] = useState(0);
-  const [totalValue, setTotalValue] = useState(0);
-  const [bonusComponent, setBonusComponent] = useState(0);
-  const [percentOnTime, setPercentOnTime] = useState(0);
-  const [totalOnTime, setTotalOnTime] = useState(0);
-  const [percentLate, setPercentLate] = useState(0);
-  const [totalLate, setTotalLate] = useState(0);
-  const [bonusOnTime, setBonusOnTime] = useState(0);
-  const [bonusLate, setBonusLate] = useState(0);
-  const [total, setTotal] = useState(0);
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [currentYear, setCurrentYear] = useState(
+    () => new Date().getFullYear().toString()
+  );
+  const [salaryDeduction, setSalaryDeduction] = useState("");
+  const [bonusRows, setBonusRows] = useState([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
 
-  const monthMapping = {
-    January: "jan",
-    February: "feb",
-    March: "mar",
-    April: "apr",
-    May: "may",
-    June: "jun",
-    July: "jul",
-    August: "aug",
-    September: "sep",
-    October: "oct",
-    November: "nov",
-    December: "dec",
-  };
-
-  useEffect(() => {
-    const year = new Date().getFullYear();
-    setCurrentYear(year);
-  }, []);
+  const limit = 5;
 
   useEffect(() => {
     listEmployees()
       .then((rows) => {
-        setListOfEmployee(rows);
         const activeEmployees = rows.filter(
           (employee) => employee.status !== "Inactive"
         );
-        setFilteredEmployee(activeEmployees);
+        setEmployees(activeEmployees);
       })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
+      .catch((error) => console.error("Error getting employees:", error));
   }, []);
-
-  // useEffect(() => {
-  //   axios
-  //     .get("http://localhost:3001/controls")
-  //     .then((response) => {
-  //       setListOfControl(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error Getting Data:", error);
-  //     });
-  // }, []);
 
   useEffect(() => {
-    listBonuses()
-      .then((rows) => {
-        setListOfBonus(rows);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
+    listControls()
+      .then((rows) => setControls(rows))
+      .catch((error) => console.error("Error getting controls:", error));
   }, []);
 
-  // useEffect(() => {
-  //   axios
-  //     .get("http://localhost:3001/reports")
-  //     .then((response) => {
-  //       setListOfReport(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error Getting Data:", error);
-  //     });
-  // }, []);
+  useEffect(() => {
+    listSetups()
+      .then((rows) => setSetups(rows))
+      .catch((error) => console.error("Error getting setups:", error));
+  }, []);
 
   useEffect(() => {
     listClients()
-      .then((rows) => {
-        setListOfClient(rows);
-      })
-      .catch((error) => {
-        console.error("Error Getting Data:", error);
-      });
+      .then((rows) => setClients(rows))
+      .catch((error) => console.error("Error getting clients:", error));
   }, []);
 
-  const handleAddBonus = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    listBonuses()
+      .then((rows) => setBonuses(rows))
+      .catch((error) => console.error("Error getting bonuses:", error));
+  }, []);
 
-    if (salaryDeduction === 0) {
+  const yearNumber = useMemo(() => resolveYear(currentYear), [currentYear]);
+
+  const setupByClient = useMemo(() => {
+    const map = new Map();
+    setups.forEach((setup) => {
+      map.set(setup.client_candidate, setup);
+    });
+    return map;
+  }, [setups]);
+
+  const clientStatusMap = useMemo(() => {
+    const map = new Map();
+    clients.forEach((client) => {
+      map.set(client.client_name, client.client_status);
+    });
+    return map;
+  }, [clients]);
+
+  const employeeClients = useMemo(() => {
+    if (!selectedEmployee) {
+      return new Set();
+    }
+
+    return new Set(
+      setups
+        .filter(
+          (setup) =>
+            setup.employee1 === selectedEmployee ||
+            setup.employee2 === selectedEmployee
+        )
+        .map((setup) => setup.client_candidate)
+    );
+  }, [setups, selectedEmployee]);
+
+
+  const availableMonthNames = useMemo(() => {
+    if (!selectedEmployee) {
+      return new Set();
+    }
+
+    const monthsWithData = new Set();
+
+    controls.forEach((control) => {
+      const recordYear = control.createdAt
+        ? new Date(control.createdAt).getFullYear()
+        : yearNumber;
+
+      if (recordYear !== yearNumber) {
+        return;
+      }
+
+      if (!employeeClients.has(control.client_name)) {
+        return;
+      }
+
+      MONTHS.forEach((month) => {
+        const status = control[month.key];
+        if (STATUS_WITH_BONUS.has(status)) {
+          monthsWithData.add(month.name);
+        }
+      });
+    });
+
+    return monthsWithData;
+  }, [controls, employeeClients, selectedEmployee, yearNumber]);
+
+  const hasAvailableMonths = availableMonthNames.size > 0;
+
+  const totalPages = Math.max(1, Math.ceil(bonusRows.length / limit));
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const paginatedBonus = useMemo(
+    () => bonusRows.slice((page - 1) * limit, page * limit),
+    [bonusRows, page]
+  );
+
+  const salaryDeductionNumber = useMemo(
+    () => parseCurrency(salaryDeduction),
+    [salaryDeduction]
+  );
+
+  const stats = useMemo(() => {
+    if (bonusRows.length === 0) {
+      return {
+        onTimeValue: 0,
+        lateValue: 0,
+        totalValue: 0,
+        bonusComponent: 0,
+        percentOnTime: 0,
+        totalOnTime: 0,
+        percentLate: 0,
+        totalLate: 0,
+        bonusOnTime: 0,
+        bonusLate: 0,
+        total: 0,
+      };
+    }
+
+    let onTimeValue = 0;
+    let lateValue = 0;
+
+    bonusRows.forEach((row) => {
+      if (row.disbursement_bonus === "Paid") {
+        return;
+      }
+
+      if (row.workStatus === "ON TIME") {
+        onTimeValue += row.netValueNumber;
+      } else if (row.workStatus === "LATE") {
+        lateValue += row.netValueNumber;
+      }
+    });
+
+    const totalValue = onTimeValue + lateValue;
+    const bonusComponent =
+      salaryDeductionNumber > 0 ? totalValue - salaryDeductionNumber : 0;
+    const percentOnTime =
+      totalValue > 0 ? Math.round((onTimeValue / totalValue) * 100) : 0;
+    const percentLate =
+      totalValue > 0 ? Math.round((lateValue / totalValue) * 100) : 0;
+    const totalOnTime = Math.round((percentOnTime / 100) * bonusComponent) || 0;
+    const totalLate = Math.round((percentLate / 100) * bonusComponent) || 0;
+    const bonusOnTime = Math.round((totalOnTime / 100) * 15) || 0;
+    const bonusLate = Math.round((totalLate / 100) * 10) || 0;
+    const total = bonusOnTime + bonusLate;
+
+    return {
+      onTimeValue,
+      lateValue,
+      totalValue,
+      bonusComponent,
+      percentOnTime,
+      totalOnTime,
+      percentLate,
+      totalLate,
+      bonusOnTime,
+      bonusLate,
+      total,
+    };
+  }, [bonusRows, salaryDeductionNumber]);
+
+  const handleCalculate = (event) => {
+    event.preventDefault();
+
+    if (!selectedEmployee || !selectedMonth) {
+      toast.warning("Pilih karyawan dan bulan terlebih dahulu.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       return;
     }
 
-    // const isAnyDataPaid = bonusTableData.some((data) =>
-    //   listOfBonus.some(
-    //     (bonus) =>
-    //       bonus.client_name === data.clientName &&
-    //       bonus.employee_name === data.employee &&
-    //       bonus.month === data.month &&
-    //       bonus.disbursement_bonus === "Paid"
-    //   )
-    // );
+    const monthDefinition = MONTHS.find((month) => month.name === selectedMonth);
 
-    // if (isAnyDataPaid) {
-    //   toast.error("Data Already Saved", {
-    //     position: "top-right",
-    //     autoClose: 3000,
-    //     hideProgressBar: false,
-    //     closeOnClick: true,
-    //     pauseOnHover: true,
-    //     draggable: true,
-    //     progress: undefined,
-    //   });
-    //   return;
-    // }
+    if (!monthDefinition) {
+      toast.error("Bulan yang dipilih tidak valid.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
 
-    const addToBonus = bonusTableData.map((data) => ({
-      employee_name: data.employee,
-      client_name: data.clientName,
-      month: data.month,
-      work_status: data.status,
-      net_value: data.netValue,
-      disbursement_bonus: "Paid",
-    }));
+    if (!hasAvailableMonths) {
+      toast.info("Belum ada data kontrol dengan status ON TIME atau LATE.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setBonusRows([]);
+      return;
+    }
 
-    // const reportPaid = listOfBonus.some((bonus) =>
-    //   listOfReport.some(
-    //     (report) =>
-    //       report.employee_name === bonus.employee_name &&
-    //       report.month === bonus.month
-    //   )
-    // );
+    if (!availableMonthNames.has(monthDefinition.name)) {
+      toast.info("Belum ada data kontrol ON TIME atau LATE untuk bulan ini.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setBonusRows([]);
+      return;
+    }
 
-    // if (reportPaid) {
-    //   return;
-    // }
 
-    // const addToReport = bonusTableData.map((data) => ({
-    //   employee_name: data.employee,
-    //   month: data.month,
-    //   salary_deduction: salaryDeduction,
-    //   month_ontime: onTime,
-    //   month_late: late,
-    //   bonus_component: bonusComponent,
-    //   percent_ontime: percentOnTime,
-    //   percent_late: percentLate,
-    //   total_ontime: totalOnTime,
-    //   total_late: totalLate,
-    //   bonus_ontime: bonusOnTime,
-    //   bonus_late: bonusLate,
-    //   total: total,
-    // }));
+    const existingBonusMap = new Map();
 
-    Swal.fire({
+    bonuses.forEach((bonus) => {
+      const bonusYear = bonus.createdAt
+        ? new Date(bonus.createdAt).getFullYear()
+        : yearNumber;
+
+      if (bonusYear !== yearNumber) {
+        return;
+      }
+
+      const keyWithEmployee = createBonusKey(
+        bonus.client_name,
+        bonus.month,
+        bonus.employee_name || ""
+      );
+
+      existingBonusMap.set(keyWithEmployee, bonus);
+
+      const keyWithoutEmployee = createBonusKey(
+        bonus.client_name,
+        bonus.month,
+        ""
+      );
+
+      if (!existingBonusMap.has(keyWithoutEmployee)) {
+        existingBonusMap.set(keyWithoutEmployee, bonus);
+      }
+    });
+
+    const nextRows = [];
+
+    controls.forEach((control) => {
+      const recordYear = control.createdAt
+        ? new Date(control.createdAt).getFullYear()
+        : yearNumber;
+
+      if (recordYear !== yearNumber) {
+        return;
+      }
+
+      if (!employeeClients.has(control.client_name)) {
+        return;
+      }
+
+      const setup = setupByClient.get(control.client_name);
+
+      if (!setup) {
+        return;
+      }
+
+      const clientStatus = clientStatusMap.get(control.client_name);
+      if (clientStatus === "Inactive") {
+        return;
+      }
+
+      const status = control[monthDefinition.key];
+      if (!STATUS_WITH_BONUS.has(status)) {
+        return;
+      }
+
+      let netValueSource = "0";
+
+      if (setup.employee1 === selectedEmployee) {
+        netValueSource = setup.net_value1;
+      } else if (setup.employee2 === selectedEmployee) {
+        netValueSource = setup.net_value2;
+      } else {
+        return;
+      }
+
+      const keyWithEmployee = createBonusKey(
+        control.client_name,
+        monthDefinition.name,
+        selectedEmployee
+      );
+      const keyWithoutEmployee = createBonusKey(
+        control.client_name,
+        monthDefinition.name,
+        ""
+      );
+
+      const existing =
+        existingBonusMap.get(keyWithEmployee) ||
+        existingBonusMap.get(keyWithoutEmployee);
+
+      const workStatus = existing?.work_status || status;
+      const netValue = existing?.net_value || netValueSource || "0";
+      const disbursement = existing?.disbursement_bonus || "Unpaid";
+
+      nextRows.push({
+        clientName: control.client_name,
+        employee: selectedEmployee,
+        month: monthDefinition.name,
+        workStatus,
+        netValue,
+        netValueNumber: parseCurrency(netValue),
+        disbursement_bonus: disbursement,
+        isPersisted: Boolean(existing),
+      });
+    });
+
+    if (nextRows.length === 0) {
+      toast.info("Tidak ada data bonus yang memenuhi kriteria.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+
+    nextRows.sort((a, b) => a.clientName.localeCompare(b.clientName));
+
+    setBonusRows(nextRows);
+    setPage(1);
+  };
+
+  const handleAddBonus = async (event) => {
+    event.preventDefault();
+
+    if (bonusRows.length === 0) {
+      toast.info("Tidak ada data bonus untuk disimpan.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const rowsToSave = bonusRows.filter(
+      (row) => !row.isPersisted && row.disbursement_bonus === "Unpaid"
+    );
+
+    if (rowsToSave.length === 0) {
+      toast.info("Data bonus sudah ada.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const { isConfirmed } = await Swal.fire({
       title: "Apakah Kamu Yakin?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        createBonus(addToBonus)
-          .then((response) => {
-            console.log("Data Added:", response.data);
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await Promise.all(
+        rowsToSave.map((row) =>
+          createBonus({
+            client_name: row.clientName,
+            month: row.month,
+            work_status: row.workStatus,
+            net_value: row.netValue,
+            disbursement_bonus: "Paid",
+            employee_name: row.employee,
           })
-          .catch(() => {
-            toast.error("Error Saving Data", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            });
-            console.error("Error Saving Data", error);
-          });
-
-        // axios
-        //   .post("http://localhost:3001/reports", addToReport)
-        //   .then((response) => {
-        //     console.log("Data Added:", response.data);
-        //   })
-        //   .catch(() => {
-        //     console.error("Error Saving Data", error);
-        //   });
-        // Swal.fire({
-        //   title: "Saved!",
-        //   icon: "success",
-        //   didClose: () => {
-        //     window.location.reload();
-        //   },
-        // });
-      }
-    });
-  };
-
-  const handleCalculate = (e) => {
-    e.preventDefault();
-
-    const filteredListOfBonus = listOfBonus.filter((bonus) => {
-      const bonusYear = new Date(bonus.createdAt).getFullYear();
-      return (
-        bonusYear === Number(currentYear, 10) &&
-        bonus.employee_name === selectedEmployee
-      );
-    });
-
-    const isValidMonth = listOfControl.some((control) => {
-      const monthColumnKey = `month_${monthMapping[selectedMonth]}`;
-      const status = control[monthColumnKey];
-      return status === "ON TIME" || status === "LATE";
-    });
-
-    if (!isValidMonth) {
-      setBonusTableData([]);
-      return [];
-    }
-
-    const employeeMatches = listOfControl.some(
-      (control) =>
-        selectedEmployee === control.employee1 ||
-        selectedEmployee === control.employee2
-    );
-
-    if (!employeeMatches) {
-      setBonusTableData([]);
-      return [];
-    }
-
-    const getAdjacentMonths = (month) => {
-      const months = Object.keys(monthMapping);
-      const currentIndex = months.indexOf(month);
-      const prevMonth = currentIndex > 0 ? months[currentIndex - 1] : null;
-      const nextMonth =
-        currentIndex < months.length - 1 ? months[currentIndex + 1] : null;
-      return { prevMonth, currentMonth: month, nextMonth };
-    };
-
-    const { prevMonth, currentMonth, nextMonth } =
-      getAdjacentMonths(selectedMonth);
-
-    const allData = listOfControl.flatMap((control) => {
-      const controlYear = new Date(control.createdAt).getFullYear();
-      if (controlYear !== Number(currentYear, 10)) {
-        return [];
-      }
-
-      const monthsToCheck = [prevMonth, currentMonth, nextMonth].filter(
-        Boolean
-      );
-      const relevantData = monthsToCheck.flatMap((month) => {
-        const monthKey = `month_${monthMapping[month]}`;
-        const status = control[monthKey];
-
-        if (status === "ON TIME" || status === "LATE") {
-          const isEmployee1 = selectedEmployee === control.employee1;
-          const isEmployee2 = selectedEmployee === control.employee2;
-
-          if (!isEmployee1 && !isEmployee2) {
-            return [];
-          }
-
-          const matchedEmployee = isEmployee1
-            ? control.employee1
-            : control.employee2;
-          const netValue = isEmployee1
-            ? control.net_value1
-            : control.net_value2;
-
-          return [
-            {
-              clientName: control.client_name,
-              employee: matchedEmployee,
-              month: month,
-              status: status,
-              netValue: netValue,
-              disbursement_bonus: "Unpaid",
-            },
-          ];
-        }
-        return [];
-      });
-
-      return relevantData;
-    });
-
-    const activeClientData = allData.filter((data) => {
-      const client = listOfClient.find(
-        (client) => client.client_name === data.clientName
-      );
-      return client && client.client_status !== "Inactive";
-    });
-
-    const unmatchedData = activeClientData.filter(
-      (data) =>
-        !filteredListOfBonus.some(
-          (bonus) =>
-            bonus.client_name === data.clientName &&
-            bonus.employee_name === data.employee &&
-            bonus.month === data.month &&
-            bonus.work_status === data.status &&
-            bonus.net_value === data.netValue &&
-            bonus.disbursement_bonus
         )
-    );
-
-    const filteredBonusData = filteredListOfBonus.filter(
-      (bonus) =>
-        bonus.employee_name === selectedEmployee &&
-        bonus.month === selectedMonth &&
-        bonus.disbursement_bonus
-    );
-
-    if (filteredBonusData.length === 0) {
-      setBonusTableData(unmatchedData);
-    } else {
-      setBonusTableData(
-        filteredBonusData.map((bonus) => ({
-          clientName: bonus.client_name,
-          employee: bonus.employee_name,
-          month: bonus.month,
-          status: bonus.work_status,
-          netValue: bonus.net_value,
-          disbursement_bonus: bonus.disbursement_bonus,
-        }))
       );
-    }
 
-    let onTimeValue = 0;
-    let lateValue = 0;
+      const savedKeys = new Set(
+        rowsToSave.map((row) =>
+          createBonusKey(row.clientName, row.month, row.employee)
+        )
+      );
 
-    const isPaid = listOfBonus.some(
-      (bonus) =>
-        bonus.employee_name === selectedEmployee &&
-        bonus.month === selectedMonth &&
-        bonus.disbursement_bonus === "Paid"
-    );
+      setBonusRows((prev) =>
+        prev.map((row) =>
+          savedKeys.has(createBonusKey(row.clientName, row.month, row.employee))
+            ? { ...row, isPersisted: true, disbursement_bonus: "Paid" }
+            : row
+        )
+      );
 
-    if (!isPaid) {
-      unmatchedData.forEach((data) => {
-        const numericValue = Number(data.netValue.replace(/\./g, ""));
-        if (data.status === "ON TIME") {
-          onTimeValue += numericValue;
-        } else if (data.status === "LATE") {
-          lateValue += numericValue;
-        }
+      const latestBonuses = await listBonuses();
+      setBonuses(latestBonuses);
+
+      toast.success("Data bonus berhasil disimpan.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      console.error("Error saving bonus data:", error);
+      toast.error("Gagal menyimpan data bonus.", {
+        position: "top-right",
+        autoClose: 3000,
       });
     }
-    setOnTime(onTimeValue);
-    setLate(lateValue);
-
-    const totalValue = onTimeValue + lateValue;
-    setTotalValue(totalValue);
-
-    const bonusComponent =
-      salaryDeduction !== 0 ? totalValue - salaryDeduction : 0;
-    setBonusComponent(bonusComponent);
-
-    const percentageOnTime =
-      totalValue > 0 ? (onTimeValue / totalValue) * 100 : 0;
-    setPercentOnTime(Math.round(percentageOnTime));
-
-    const totalOnTime = (percentOnTime / 100) * bonusComponent || 0;
-    setTotalOnTime(Math.round(totalOnTime));
-
-    const percentageLate = totalValue > 0 ? (lateValue / totalValue) * 100 : 0;
-    setPercentLate(Math.round(percentageLate));
-
-    const totalLate = (percentLate / 100) * bonusComponent || 0;
-    setTotalLate(Math.round(totalLate));
-
-    const bonusOnTime = Math.round((totalOnTime / 100) * 15) || 0;
-    setBonusOnTime(bonusOnTime);
-
-    const bonusLate = Math.round((totalLate / 100) * 10) || 0;
-    setBonusLate(bonusLate);
-
-    const total = bonusOnTime + bonusLate;
-    setTotal(total);
   };
 
-  const tableData = bonusTableData;
-
-  const paginatedBonus = tableData.slice((page - 1) * limit, page * limit);
-
-  const handleSalaryDeductionChange = (e) => {
-    const numericValue = e.target.value.replace(/\./g, "");
-    setSalaryDeduction(numericValue);
-  };
-
-  const handleEnter = (e) => {
-    if (e.key === "Enter") {
-      handleCalculate(e);
-    }
+  const handleSalaryDeductionChange = (event) => {
+    const digitsOnly = event.target.value.replace(/[^\d]/g, "");
+    setSalaryDeduction(digitsOnly);
   };
 
   return (
     <>
       <div className="container">
         <h3 className="text-center mt-3 mb-5">Kalkulasi Bonus</h3>
-        <form
-          className="row g-3"
-          onSubmit={handleCalculate}
-          onKeyDown={handleEnter}>
+        <form className="row g-3" onSubmit={handleCalculate}>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="employee_name"> Nama Karyawan </label>
             <select
+              name="employee_name"
               className="form-select"
               value={selectedEmployee}
-              onChange={(e) => setSelectedEmployee(e.target.value)}
+              onChange={(event) => setSelectedEmployee(event.target.value)}
               required>
               <option value="" hidden>
-                --Please Choose Options--
+                ---Please Choose Options---
               </option>
-              {filteredEmployee.map((employee) => (
+              {employees.map((employee) => (
                 <option key={employee.id} value={employee.name}>
                   {employee.name}
                 </option>
@@ -453,22 +516,27 @@ function Bonus() {
               type="text"
               className="form-control"
               value={currentYear}
-              onChange={(e) => setCurrentYear(e.target.value)}
+              onChange={(event) => setCurrentYear(event.target.value)}
             />
           </div>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="month"> Bulan </label>
             <select
+              name="month"
               className="form-select"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              onChange={(event) => setSelectedMonth(event.target.value)}
+              disabled={selectedEmployee === ""}
               required>
               <option value="" hidden>
                 --Please Choose Options--
               </option>
-              {Object.keys(monthMapping).map((month) => (
-                <option key={month}>{month}</option>
+              {MONTHS.map((month) => (
+                <option key={month.key} value={month.name}>
+                  {month.name}
+                </option>
               ))}
+
             </select>
           </div>
           <div className="col-lg-12 mt-3">
@@ -492,184 +560,165 @@ function Bonus() {
                 </tr>
               </thead>
               <tbody className="text-center align-middle">
-                {paginatedBonus.map((data, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{data.clientName}</td>
-                    <td>{data.month}</td>
-                    <td>{data.status}</td>
-                    <td>{data.netValue}</td>
-                    <td>{data.disbursement_bonus}</td>
+                {paginatedBonus.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>Tidak ada data</td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedBonus.map((row, index) => (
+                    <tr key={`${row.clientName}-${row.month}`}>
+                      <td>{(page - 1) * limit + index + 1}</td>
+                      <td>{row.clientName}</td>
+                      <td>{row.month}</td>
+                      <td>{row.workStatus}</td>
+                      <td>{formatCurrency(row.netValue)}</td>
+                      <td>{row.disbursement_bonus}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
-        {/* Pagination Bonuses */}
         <div className="d-flex justify-content-between align-items-center">
           <button
             className="btn btn-primary"
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}>
+            onClick={() => setPage((current) => Math.max(current - 1, 1))}>
             Previous
           </button>
           <span>
-            Page {page} of {Math.ceil(tableData.length / limit)}
+            Page {page} of {totalPages}
           </span>
           <button
             className="btn btn-primary"
-            disabled={page >= Math.ceil(tableData.length / limit)}
-            onClick={() => setPage(page + 1)}>
+            disabled={page >= totalPages}
+            onClick={() =>
+              setPage((current) => Math.min(current + 1, totalPages))
+            }>
             Next
           </button>
         </div>
-        {/* Input field */}
-        <div className="container mt-3">
-          <form className="row g-3" onSubmit={handleAddBonus}>
-            <div className="form-group col-md-6 mt-1">
-              <label htmlFor="ontime"> Bulan ON TIME : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={onTime.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label htmlFor="late"> Bulan LATE : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={late.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label htmlFor="total_value"> Total Nilai : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={totalValue.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label htmlFor="salary_deduction">
-                Pengurang (Hitungan Gaji) :
-              </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={Number(salaryDeduction).toLocaleString("id-ID")}
-                onChange={handleSalaryDeductionChange}
-                onKeyDown={handleEnter}
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label htmlFor="Debt_Recipient"> Hutang Penerimaan : </label>
-              <input type="text" className="form-control w-50" disabled />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label htmlFor="component_bonus"> Bonus Komponen : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={bonusComponent.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label className="percentOnTime">
-                Persentase Total ON TIME :
-              </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={percentOnTime + "%"}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label>Total ON TIME : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={totalOnTime.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Persentase Total LATE : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={percentLate + "%"}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Total LATE : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={totalLate.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Persentase Bonus ON TIME : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={"15%"}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Bonus ON TIME : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={bonusOnTime.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Persentase Bonus Late : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={"10%"}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3">
-              <label> Bonus Late : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={bonusLate.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="form-group col-md-6 mt-3" hidden>
-              <label> Total : </label>
-              <input
-                type="text"
-                className="form-control w-50"
-                value={total.toLocaleString("id-ID")}
-                disabled
-              />
-            </div>
-            <div className="col-lg-12 mt-3">
-              <button className="btn btn-success" type="submit">
-                Save
-              </button>
-              <ToastContainer />
-            </div>
-          </form>
-        </div>
+        <form className="row g-3" onSubmit={handleAddBonus}>
+          <div className="form-group col-md-6 mt-3">
+            <label htmlFor="totalValue"> Total Value : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.totalValue)}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label htmlFor="salary_deduction"> Pengurang (Hitungan Gaji) : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={salaryDeductionNumber.toLocaleString("id-ID")}
+              onChange={handleSalaryDeductionChange}
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label htmlFor="Debt_Recipient"> Hutang Penerimaan : </label>
+            <input type="text" className="form-control w-50" disabled />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label htmlFor="component_bonus"> Bonus Komponen : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.bonusComponent)}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label className="percentOnTime"> Persentase Total ON TIME : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={`${stats.percentOnTime}%`}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Total ON TIME : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.totalOnTime)}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Persentase Total LATE : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={`${stats.percentLate}%`}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Total LATE : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.totalLate)}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Persentase Bonus ON TIME : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value="15%"
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Bonus ON TIME : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.bonusOnTime)}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Persentase Bonus Late : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value="10%"
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3">
+            <label> Bonus Late : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.bonusLate)}
+              disabled
+            />
+          </div>
+          <div className="form-group col-md-6 mt-3" hidden>
+            <label> Total : </label>
+            <input
+              type="text"
+              className="form-control w-50"
+              value={formatCurrency(stats.total)}
+              disabled
+            />
+          </div>
+          <div className="col-lg-12 mt-3">
+            <button className="btn btn-success" type="submit">
+              Save
+            </button>
+            <ToastContainer />
+          </div>
+        </form>
       </div>
     </>
   );
