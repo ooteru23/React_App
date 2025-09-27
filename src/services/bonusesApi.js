@@ -16,3 +16,16 @@ export async function create(payload) {
   const { data } = await http.post("/bonuses", payload);
   return data;
 }
+
+export async function remove(id) {
+  if (hasIpc) {
+    try {
+      return await window.api.bonuses.delete(id);
+    } catch (error) {
+      console.warn("IPC bonuses:delete failed, falling back to HTTP", error);
+    }
+  }
+
+  const { data } = await http.delete(`/bonuses/${id}`);
+  return data;
+}

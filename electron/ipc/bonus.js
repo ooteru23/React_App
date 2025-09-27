@@ -1,6 +1,7 @@
 const { ipcMain } = require("electron");
 
 function registerBonusHandlers(db) {
+  console.log("[IPC] Registering bonus handlers");
   ipcMain.handle("bonuses:list", async () => {
     const rows = await db.Bonuses.findAll({ order: [["id", "ASC"]] });
     return rows.map((r) => r.toJSON());
@@ -19,6 +20,14 @@ function registerBonusHandlers(db) {
     }
     const row = await db.Bonuses.create(payload);
     return row.toJSON();
+  });
+
+  ipcMain.handle("bonuses:delete", async (_e, id) => {
+    console.log("[IPC] bonuses:delete invoked", id);
+    const row = await db.Bonuses.findByPk(Number(id));
+    if (!row) return { success: false };
+    await row.destroy();
+    return { success: true };
   });
 }
 

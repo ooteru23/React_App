@@ -38,5 +38,6 @@ contextBridge.exposeInMainWorld("api", {
   bonuses: {
     list: () => ipcRenderer.invoke("bonuses:list"),
     create: (payload) => ipcRenderer.invoke("bonuses:create", payload),
+    delete: (id) => ipcRenderer.invoke("bonuses:delete", id),
   },
 });

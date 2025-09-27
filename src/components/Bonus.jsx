@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   list as listBonuses,
   create as createBonus,
+  remove as deleteBonus,
 } from "../services/bonusesApi";
 import { list as listEmployees } from "../services/employeesApi";
 import { list as listClients } from "../services/clientsApi";
@@ -47,7 +48,8 @@ const parseCurrency = (value) => {
 
 const formatCurrency = (value) => parseCurrency(value).toLocaleString("id-ID");
 
-const createBonusKey = (client, month, employee) => `${client}|${month}|${employee}`;
+const createBonusKey = (client, month, employee) =>
+  `${client}|${month}|${employee}`;
 
 const createStatusKey = (client, month, employee, netValue) =>
   `${client}|${month}|${employee}|${netValue}`;
@@ -60,8 +62,8 @@ function Bonus() {
   const [bonuses, setBonuses] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [currentYear, setCurrentYear] = useState(
-    () => new Date().getFullYear().toString()
+  const [currentYear, setCurrentYear] = useState(() =>
+    new Date().getFullYear().toString()
   );
   const [salaryDeduction, setSalaryDeduction] = useState("");
   const [bonusRows, setBonusRows] = useState([]);
@@ -137,7 +139,6 @@ function Bonus() {
         .map((setup) => setup.client_candidate)
     );
   }, [setups, selectedEmployee]);
-
 
   const availableMonthNames = useMemo(() => {
     if (!selectedEmployee) {
@@ -261,7 +262,9 @@ function Bonus() {
       return;
     }
 
-    const monthDefinition = MONTHS.find((month) => month.name === selectedMonth);
+    const monthDefinition = MONTHS.find(
+      (month) => month.name === selectedMonth
+    );
 
     if (!monthDefinition) {
       toast.error("Bulan yang dipilih tidak valid.", {
@@ -288,7 +291,6 @@ function Bonus() {
       setBonusRows([]);
       return;
     }
-
 
     const existingBonusMap = new Map();
 
@@ -511,6 +513,114 @@ function Bonus() {
     }
   };
 
+  const handleDeleteBonus = async () => {
+    if (!selectedEmployee || !selectedMonth) {
+      toast.warning("Pilih karyawan dan bulan terlebih dahulu.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const persistedRows = bonusRows.filter(
+      (row) =>
+        row.employee === selectedEmployee &&
+        row.month === selectedMonth &&
+        row.isPersisted
+    );
+
+    if (persistedRows.length === 0) {
+      toast.info("Tidak ada data bonus yang cocok untuk dihapus.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const targetYear = yearNumber;
+    const yearMatchedBonuses = bonuses.filter((bonus) => {
+      const bonusYear = bonus.createdAt
+        ? new Date(bonus.createdAt).getFullYear()
+        : targetYear;
+      return bonusYear === targetYear;
+    });
+
+    const remainingBonuses = [...yearMatchedBonuses];
+    const idsToDelete = [];
+
+    persistedRows.forEach((row) => {
+      const normalizedValue = parseCurrency(row.netValue);
+      const candidateIndex = remainingBonuses.findIndex((bonus) => {
+        const valueMatch =
+          parseCurrency(bonus.net_value) === normalizedValue;
+        const employeeMatch = bonus.employee_name
+          ? bonus.employee_name === row.employee
+          : true;
+
+        return (
+          bonus.client_name === row.clientName &&
+          bonus.month === row.month &&
+          valueMatch &&
+          employeeMatch
+        );
+      });
+
+      if (candidateIndex >= 0) {
+        const [matched] = remainingBonuses.splice(candidateIndex, 1);
+        if (matched?.id != null) {
+          idsToDelete.push(matched.id);
+        }
+      }
+    });
+
+    if (idsToDelete.length === 0) {
+      toast.info("Tidak ada data bonus yang cocok untuk dihapus.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const { isConfirmed } = await Swal.fire({
+      title: "Hapus data bonus?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await Promise.all(idsToDelete.map((id) => deleteBonus(id)));
+
+      const latestBonuses = await listBonuses();
+      setBonuses(latestBonuses);
+
+      setBonusRows((prev) =>
+        prev.map((row) =>
+          row.employee === selectedEmployee && row.month === selectedMonth
+            ? { ...row, isPersisted: false, disbursement_bonus: "Unpaid" }
+            : row
+        )
+      );
+
+      toast.success("Data bonus berhasil dihapus.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting bonus data:", error);
+      toast.error("Gagal menghapus data bonus.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+
   const handleSalaryDeductionChange = (event) => {
     const digitsOnly = event.target.value.replace(/[^\d]/g, "");
     setSalaryDeduction(digitsOnly);
@@ -565,12 +675,18 @@ function Bonus() {
                   {month.name}
                 </option>
               ))}
-
             </select>
           </div>
-          <div className="col-lg-12 mt-3">
+          <div className="col-lg-12 mt-3 d-flex justify-content-start gap-2">
             <button className="btn btn-success" type="submit">
               Calculate
+            </button>
+            <button
+              className="btn btn-danger"
+              type="button"
+              onClick={handleDeleteBonus}
+              disabled={!selectedEmployee || !selectedMonth}>
+              Delete
             </button>
           </div>
         </form>
@@ -639,7 +755,10 @@ function Bonus() {
             />
           </div>
           <div className="form-group col-md-6 mt-3">
-            <label htmlFor="salary_deduction"> Pengurang (Hitungan Gaji) : </label>
+            <label htmlFor="salary_deduction">
+              {" "}
+              Pengurang (Hitungan Gaji) :{" "}
+            </label>
             <input
               type="text"
               className="form-control w-50"
@@ -661,7 +780,10 @@ function Bonus() {
             />
           </div>
           <div className="form-group col-md-6 mt-3">
-            <label className="percentOnTime"> Persentase Total ON TIME : </label>
+            <label className="percentOnTime">
+              {" "}
+              Persentase Total ON TIME :{" "}
+            </label>
             <input
               type="text"
               className="form-control w-50"
