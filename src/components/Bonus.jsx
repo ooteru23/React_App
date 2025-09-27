@@ -49,6 +49,9 @@ const formatCurrency = (value) => parseCurrency(value).toLocaleString("id-ID");
 
 const createBonusKey = (client, month, employee) => `${client}|${month}|${employee}`;
 
+const createStatusKey = (client, month, employee, netValue) =>
+  `${client}|${month}|${employee}|${netValue}`;
+
 function Bonus() {
   const [employees, setEmployees] = useState([]);
   const [controls, setControls] = useState([]);
@@ -298,22 +301,28 @@ function Bonus() {
         return;
       }
 
-      const keyWithEmployee = createBonusKey(
+      const normalizedValue = parseCurrency(bonus.net_value);
+
+      const keyWithEmployee = createStatusKey(
         bonus.client_name,
         bonus.month,
-        bonus.employee_name || ""
+        bonus.employee_name || "",
+        normalizedValue
       );
 
       existingBonusMap.set(keyWithEmployee, bonus);
 
-      const keyWithoutEmployee = createBonusKey(
-        bonus.client_name,
-        bonus.month,
-        ""
-      );
+      if (!bonus.employee_name) {
+        const keyWithoutEmployee = createStatusKey(
+          bonus.client_name,
+          bonus.month,
+          "",
+          normalizedValue
+        );
 
-      if (!existingBonusMap.has(keyWithoutEmployee)) {
-        existingBonusMap.set(keyWithoutEmployee, bonus);
+        if (!existingBonusMap.has(keyWithoutEmployee)) {
+          existingBonusMap.set(keyWithoutEmployee, bonus);
+        }
       }
     });
 
@@ -358,23 +367,33 @@ function Bonus() {
         return;
       }
 
-      const keyWithEmployee = createBonusKey(
+      const normalizedSetupValue = parseCurrency(netValueSource);
+
+      const keyWithEmployee = createStatusKey(
         control.client_name,
         monthDefinition.name,
-        selectedEmployee
-      );
-      const keyWithoutEmployee = createBonusKey(
-        control.client_name,
-        monthDefinition.name,
-        ""
+        selectedEmployee,
+        normalizedSetupValue
       );
 
-      const existing =
-        existingBonusMap.get(keyWithEmployee) ||
-        existingBonusMap.get(keyWithoutEmployee);
+      const keyWithoutEmployee = createStatusKey(
+        control.client_name,
+        monthDefinition.name,
+        "",
+        normalizedSetupValue
+      );
+
+      let existing = existingBonusMap.get(keyWithEmployee);
+
+      if (!existing) {
+        const fallback = existingBonusMap.get(keyWithoutEmployee);
+        if (!fallback?.employee_name) {
+          existing = fallback;
+        }
+      }
 
       const workStatus = existing?.work_status || status;
-      const netValue = existing?.net_value || netValueSource || "0";
+      const netValue = netValueSource;
       const disbursement = existing?.disbursement_bonus || "Unpaid";
 
       nextRows.push({
@@ -407,6 +426,16 @@ function Bonus() {
 
     if (bonusRows.length === 0) {
       toast.info("Tidak ada data bonus untuk disimpan.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const salaryDeductionNumber = parseCurrency(salaryDeduction);
+
+    if (!salaryDeduction || salaryDeductionNumber <= 0) {
+      toast.warning("Hitung Pengurang (Hitungan Gaji) terlebih dahulu.", {
         position: "top-right",
         autoClose: 3000,
       });
