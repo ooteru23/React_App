@@ -9,6 +9,7 @@ import { list as listClient } from "../services/clientsApi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
 
 function Setup() {
   const [filteredEmployee, setFilteredEmployee] = useState([]);
@@ -251,9 +252,7 @@ function Setup() {
     (employee) => employee.name !== employee1
   );
 
-  const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
+  const formatNumber = (value) => formatWithComma(value);
 
   const calculateNetValue1 = (
     contractValue,
@@ -261,11 +260,9 @@ function Setup() {
     softwarePrice,
     percent1
   ) => {
-    const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
-    const parsedCommissionPrice = parseFloat(
-      commissionPrice.replace(/\./g, "")
-    );
-    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
+    const parsedContractValue = parseFloat(sanitizeDigits(contractValue));
+    const parsedCommissionPrice = parseFloat(sanitizeDigits(commissionPrice));
+    const parsedSoftwarePrice = parseFloat(sanitizeDigits(softwarePrice));
     const parsedPercent1 = parseFloat(percent1) / 100;
 
     const result =
@@ -280,11 +277,9 @@ function Setup() {
     softwarePrice,
     percent2
   ) => {
-    const parsedContractValue = parseFloat(contractValue.replace(/\./g, ""));
-    const parsedCommissionPrice = parseFloat(
-      commissionPrice.replace(/\./g, "")
-    );
-    const parsedSoftwarePrice = parseFloat(softwarePrice.replace(/\./g, ""));
+    const parsedContractValue = parseFloat(sanitizeDigits(contractValue));
+    const parsedCommissionPrice = parseFloat(sanitizeDigits(commissionPrice));
+    const parsedSoftwarePrice = parseFloat(sanitizeDigits(softwarePrice));
     const parsedPercent2 = parseFloat(percent2) / 100;
 
     const result =
@@ -295,7 +290,7 @@ function Setup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const input = value.replace(/\./g, "");
+    const input = sanitizeDigits(value);
     const formattedNumber = formatNumber(input);
 
     switch (name) {
@@ -502,29 +497,37 @@ function Setup() {
               ))}
             </select>
           </div>
-          <div className="form-group col-md-6 mt-1 input-wrapper">
+          <div className="form-group col-md-6 mt-1">
             <label htmlFor="percent1">Persentase 1</label>
-            <input
-              type="text"
-              name="percent1"
-              className="form-control"
-              placeholder="Insert Percent 1"
-              value={percent1}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-group">
+              <input
+                type="text"
+                name="percent1"
+                className="form-control text-start"
+                placeholder="Insert Percent 1"
+                value={percent1}
+                onChange={handleChange}
+                inputMode="numeric"
+                required
+              />
+              <span className="input-group-text">%</span>
+            </div>
           </div>
-          <div className="form-group col-md-6 mt-1 input-wrapper">
+          <div className="form-group col-md-6 mt-1">
             <label htmlFor="percent2">Persentase 2</label>
-            <input
-              type="text"
-              name="percent2"
-              className="form-control"
-              placeholder="Insert Percent 2"
-              value={percent2}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-group">
+              <input
+                type="text"
+                name="percent2"
+                className="form-control text-start"
+                placeholder="Insert Percent 2"
+                value={percent2}
+                onChange={handleChange}
+                inputMode="numeric"
+                required
+              />
+              <span className="input-group-text">%</span>
+            </div>
           </div>
           <div className="form-group col-md-6 mt-1">
             <label htmlFor="net_value1">Net Value 1</label>
@@ -602,10 +605,10 @@ function Setup() {
                       <td>{setup.software_price}</td>
                       <td>{setup.employee1}</td>
                       <td>{setup.percent1 ? `${setup.percent1}%` : ""}</td>
-                      <td>{setup.net_value1}</td>
+                      <td>{formatNumber(setup.net_value1)}</td>
                       <td>{setup.employee2}</td>
                       <td>{setup.percent2 ? `${setup.percent2}%` : ""}</td>
-                      <td>{setup.net_value2}</td>
+                      <td>{formatNumber(setup.net_value2)}</td>
                       <td>
                         <button
                           className="btn btn-warning"

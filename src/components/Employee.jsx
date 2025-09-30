@@ -7,6 +7,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
 
 function Employee() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -128,13 +129,17 @@ function Employee() {
     setSearchFilter(e.target.value);
   };
 
+  const searchTerm = searchFilter.toLowerCase();
+  const searchDigits = sanitizeDigits(searchFilter);
+
   const filteredEmployee = listOfEmployee
     .filter(
       (employee) =>
-        employee.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        employee.job_title.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        employee.status.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        employee.salary.toLowerCase().includes(searchFilter.toLowerCase())
+        employee.name.toLowerCase().includes(searchTerm) ||
+        employee.job_title.toLowerCase().includes(searchTerm) ||
+        employee.status.toLowerCase().includes(searchTerm) ||
+        formatNumber(employee.salary).toLowerCase().includes(searchTerm) ||
+        (searchDigits && sanitizeDigits(employee.salary).includes(searchDigits))
     )
     .sort((a, b) => {
       if (a.status === "Inactive" && b.status !== "Inactive") return 1;
@@ -147,12 +152,10 @@ function Employee() {
     page * limit
   );
 
-  const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
+  const formatNumber = (value) => formatWithComma(value);
 
   const handleChange = (e) => {
-    const input = e.target.value.replace(/\./g, "");
+    const input = sanitizeDigits(e.target.value);
     const formattedNumber = formatNumber(input);
     setSalary(formattedNumber);
   };
@@ -238,7 +241,7 @@ function Employee() {
                 <tr>
                   <th>Nomor</th>
                   <th>Nama</th>
-                  <th>Nama Job</th>
+                  <th>Pekerjaan</th>
                   <th>Status</th>
                   <th>Gaji</th>
                   <th>Actions</th>
@@ -252,7 +255,7 @@ function Employee() {
                       <td>{employee.name}</td>
                       <td>{employee.job_title}</td>
                       <td>{employee.status}</td>
-                      <td>{employee.salary}</td>
+                      <td>{formatNumber(employee.salary)}</td>
                       <td>
                         <button
                           className="btn btn-warning"

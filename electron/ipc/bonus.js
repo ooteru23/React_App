@@ -9,6 +9,7 @@ function registerBonusHandlers(db) {
 
   ipcMain.handle("bonuses:create", async (_e, payload) => {
     const requiredFields = [
+      "employee_name",
       "client_name",
       "month",
       "work_status",

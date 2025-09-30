@@ -4,6 +4,7 @@ import {
   create as createBonus,
   remove as deleteBonus,
 } from "../services/bonusesApi";
+import { create as createReport } from "../services/reportsApi";
 import { list as listEmployees } from "../services/employeesApi";
 import { list as listClients } from "../services/clientsApi";
 import { list as listControls } from "../services/controlsApi";
@@ -46,7 +47,7 @@ const parseCurrency = (value) => {
   return Number(numeric || 0);
 };
 
-const formatCurrency = (value) => parseCurrency(value).toLocaleString("id-ID");
+const formatCurrency = (value) => parseCurrency(value).toLocaleString("en-US");
 
 const createBonusKey = (client, month, employee) =>
   `${client}|${month}|${employee}`;
@@ -293,6 +294,7 @@ function Bonus() {
     }
 
     const existingBonusMap = new Map();
+    const employeeSpecificBonuses = new Set();
 
     bonuses.forEach((bonus) => {
       const bonusYear = bonus.createdAt
@@ -301,6 +303,11 @@ function Bonus() {
 
       if (bonusYear !== yearNumber) {
         return;
+      }
+
+      const comboKey = `${bonus.client_name}|${bonus.month}`;
+      if (bonus.employee_name) {
+        employeeSpecificBonuses.add(comboKey);
       }
 
       const normalizedValue = parseCurrency(bonus.net_value);
@@ -349,6 +356,8 @@ function Bonus() {
         return;
       }
 
+      const comboKey = `${control.client_name}|${monthDefinition.name}`;
+
       const clientStatus = clientStatusMap.get(control.client_name);
       if (clientStatus === "Inactive") {
         return;
@@ -387,7 +396,7 @@ function Bonus() {
 
       let existing = existingBonusMap.get(keyWithEmployee);
 
-      if (!existing) {
+      if (!existing && !employeeSpecificBonuses.has(comboKey)) {
         const fallback = existingBonusMap.get(keyWithoutEmployee);
         if (!fallback?.employee_name) {
           existing = fallback;
@@ -477,8 +486,8 @@ function Bonus() {
             month: row.month,
             work_status: row.workStatus,
             net_value: row.netValue,
-            disbursement_bonus: "Paid",
             employee_name: row.employee,
+            disbursement_bonus: "Paid",
           })
         )
       );
@@ -499,6 +508,70 @@ function Bonus() {
 
       const latestBonuses = await listBonuses();
       setBonuses(latestBonuses);
+
+      const paidBonuses = latestBonuses.filter((bonus) => {
+        if (bonus.disbursement_bonus !== "Paid") {
+          return false;
+        }
+
+        const bonusYear = bonus.createdAt
+          ? new Date(bonus.createdAt).getFullYear()
+          : yearNumber;
+
+        return (
+          bonus.employee_name === selectedEmployee &&
+          bonus.month === selectedMonth &&
+          bonusYear === yearNumber
+        );
+      });
+
+      if (paidBonuses.length > 0) {
+        const onTimeValue = paidBonuses.reduce((accumulator, bonus) => {
+          return bonus.work_status === "ON TIME"
+            ? accumulator + parseCurrency(bonus.net_value)
+            : accumulator;
+        }, 0);
+
+        const lateValue = paidBonuses.reduce((accumulator, bonus) => {
+          return bonus.work_status === "LATE"
+            ? accumulator + parseCurrency(bonus.net_value)
+            : accumulator;
+        }, 0);
+
+        const totalValue = onTimeValue + lateValue;
+        const bonusComponent =
+          salaryDeductionNumber > 0 ? totalValue - salaryDeductionNumber : 0;
+        const percentOnTime =
+          totalValue > 0 ? Math.round((onTimeValue / totalValue) * 100) : 0;
+        const percentLate =
+          totalValue > 0 ? Math.round((lateValue / totalValue) * 100) : 0;
+        const totalOnTime =
+          Math.round((percentOnTime / 100) * bonusComponent) || 0;
+        const totalLate = Math.round((percentLate / 100) * bonusComponent) || 0;
+        const bonusOnTime = Math.round((totalOnTime / 100) * 15) || 0;
+        const bonusLate = Math.round((totalLate / 100) * 10) || 0;
+        const totalBonus = bonusOnTime + bonusLate;
+
+        try {
+          await createReport({
+            employee_name: selectedEmployee,
+            month: selectedMonth,
+            salary_deduction: salaryDeductionNumber.toString(),
+            month_ontime: onTimeValue.toString(),
+            month_late: lateValue.toString(),
+            bonus_component: bonusComponent.toString(),
+            percent_ontime: percentOnTime.toString(),
+            percent_late: percentLate.toString(),
+            total_ontime: totalOnTime.toString(),
+            total_late: totalLate.toString(),
+            bonus_ontime: bonusOnTime.toString(),
+            bonus_late: bonusLate.toString(),
+            total: totalBonus.toString(),
+          });
+        } catch (reportError) {
+          console.error("Error saving report data:", reportError);
+        }
+      }
 
       toast.success("Data bonus berhasil disimpan.", {
         position: "top-right",
@@ -551,8 +624,7 @@ function Bonus() {
     persistedRows.forEach((row) => {
       const normalizedValue = parseCurrency(row.netValue);
       const candidateIndex = remainingBonuses.findIndex((bonus) => {
-        const valueMatch =
-          parseCurrency(bonus.net_value) === normalizedValue;
+        const valueMatch = parseCurrency(bonus.net_value) === normalizedValue;
         const employeeMatch = bonus.employee_name
           ? bonus.employee_name === row.employee
           : true;
@@ -756,13 +828,12 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label htmlFor="salary_deduction">
-              {" "}
-              Pengurang (Hitungan Gaji) :{" "}
+              Pengurang (Hitungan Gaji) :
             </label>
             <input
               type="text"
               className="form-control w-50"
-              value={salaryDeductionNumber.toLocaleString("id-ID")}
+              value={salaryDeductionNumber.toLocaleString("en-US")}
               onChange={handleSalaryDeductionChange}
             />
           </div>
@@ -780,16 +851,16 @@ function Bonus() {
             />
           </div>
           <div className="form-group col-md-6 mt-3">
-            <label className="percentOnTime">
-              {" "}
-              Persentase Total ON TIME :{" "}
-            </label>
-            <input
-              type="text"
-              className="form-control w-50"
-              value={`${stats.percentOnTime}%`}
-              disabled
-            />
+            <label className="percentOnTime">Persentase Total ON TIME :</label>
+            <div className="input-group w-50">
+              <input
+                type="text"
+                className="form-control text-start"
+                value={stats.percentOnTime}
+                disabled
+              />
+              <span className="input-group-text">%</span>
+            </div>
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Total ON TIME : </label>
@@ -802,12 +873,15 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Total LATE : </label>
-            <input
-              type="text"
-              className="form-control w-50"
-              value={`${stats.percentLate}%`}
-              disabled
-            />
+            <div className="input-group w-50">
+              <input
+                type="text"
+                className="form-control text-start"
+                value={stats.percentLate}
+                disabled
+              />
+              <span className="input-group-text">%</span>
+            </div>
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Total LATE : </label>
@@ -820,12 +894,15 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus ON TIME : </label>
-            <input
-              type="text"
-              className="form-control w-50"
-              value="15%"
-              disabled
-            />
+            <div className="input-group w-50">
+              <input
+                type="text"
+                className="form-control text-start"
+                value={15}
+                disabled
+              />
+              <span className="input-group-text">%</span>
+            </div>
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus ON TIME : </label>
@@ -838,12 +915,15 @@ function Bonus() {
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Persentase Bonus Late : </label>
-            <input
-              type="text"
-              className="form-control w-50"
-              value="10%"
-              disabled
-            />
+            <div className="input-group w-50">
+              <input
+                type="text"
+                className="form-control text-start"
+                value={10}
+                disabled
+              />
+              <span className="input-group-text">%</span>
+            </div>
           </div>
           <div className="form-group col-md-6 mt-3">
             <label> Bonus Late : </label>

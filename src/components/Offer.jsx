@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   list as listOffers,
   create as createOffer,
@@ -10,6 +10,7 @@ import { list as listEmployees } from "../services/employeesApi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
 
 function Offer() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -195,6 +196,9 @@ function Offer() {
     setSearchFilter(e.target.value);
   };
 
+  const searchTerm = searchFilter.toLowerCase();
+  const searchDigits = sanitizeDigits(searchFilter);
+
   const filteredOffer = listOfOffer
     .filter((offer) => {
       const formattedDate = formatDateValue(offer.date, "d MMMM yyyy");
@@ -208,29 +212,20 @@ function Offer() {
       );
 
       return (
-        offer.creator_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        offer.client_candidate
-          .toLowerCase()
-          .includes(searchFilter.toLowerCase()) ||
-        offer.marketing_name
-          .toLowerCase()
-          .includes(searchFilter.toLowerCase()) ||
-        offer.address.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        formattedDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        formattedValidDate.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        offer.pic.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        String(offer.telephone)
-          .toLowerCase()
-          .includes(searchFilter.toLowerCase()) ||
-        offer.service.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        formattedPeriodTime
-          .toLowerCase()
-          .includes(searchFilter.toLowerCase()) ||
-        String(offer.price)
-          .toLowerCase()
-          .includes(searchFilter.toLowerCase()) ||
-        offer.information.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        offer.offer_status.toLowerCase().includes(searchFilter.toLowerCase())
+        offer.creator_name.toLowerCase().includes(searchTerm) ||
+        offer.client_candidate.toLowerCase().includes(searchTerm) ||
+        offer.marketing_name.toLowerCase().includes(searchTerm) ||
+        offer.address.toLowerCase().includes(searchTerm) ||
+        formattedDate.toLowerCase().includes(searchTerm) ||
+        formattedValidDate.toLowerCase().includes(searchTerm) ||
+        offer.pic.toLowerCase().includes(searchTerm) ||
+        String(offer.telephone).toLowerCase().includes(searchTerm) ||
+        offer.service.toLowerCase().includes(searchTerm) ||
+        formattedPeriodTime.toLowerCase().includes(searchTerm) ||
+        formatWithComma(offer.price).toLowerCase().includes(searchTerm) ||
+        (searchDigits && sanitizeDigits(offer.price).includes(searchDigits)) ||
+        offer.information.toLowerCase().includes(searchTerm) ||
+        offer.offer_status.toLowerCase().includes(searchTerm)
       );
     })
     .sort((a, b) => {
@@ -245,12 +240,10 @@ function Offer() {
 
   const paginatedOffer = filteredOffer.slice((page - 1) * limit, page * limit);
 
-  const formatNumber = (num) => {
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
+  const formatNumber = (value) => formatWithComma(value);
 
   const handleChange = (e) => {
-    const input = e.target.value.replace(/\./g, "");
+    const input = sanitizeDigits(e.target.value);
     const formattedNumber = formatNumber(input);
     setPrice(formattedNumber);
   };
@@ -456,7 +449,7 @@ function Offer() {
                       <td>{offer.telephone}</td>
                       <td>{offer.service}</td>
                       <td>{formatDateValue(offer.period_time, "MMMM yyyy")}</td>
-                      <td>{offer.price}</td>
+                      <td>{formatNumber(offer.price)}</td>
                       <td>{offer.information}</td>
                       <td>{offer.offer_status}</td>
                       <td>

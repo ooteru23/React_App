@@ -1,111 +1,113 @@
 {
-  "name": "bonus-calculation-app",
-  "homepage": "https://ooteru23.github.io/React_App",
-  "private": true,
-  "main": "electron/main.js",
-  "version": "0.0.0",
-  "type": "commonjs",
-  "scripts": {
-    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV=true electron .\"",
-    "build:react": "vite build",
-    "build:win": "vite build && electron-builder --win",
-    "pack:dir": "vite build && electron-builder --dir",
-    "postinstall": "electron-builder install-app-deps",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "electron .",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-  },
-  "build": {
-    "appId": "com.yourco.bonuscalc",
-    "productName": "Bonus Calculation App",
-    "asar": true,
-    "asarUnpack": [
-      "**/*.node"
-    ],
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "shared/**/*",
-      "models/**/*",
-      "package.json",
-      "node_modules/**/*"
-    ],
-    "directories": {
-      "buildResources": "build"
-    },
-    "publish": "never",
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "nsis": {
-      "oneClick": true,
-      "allowElevation": true,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "runAfterFinish": true
-    }
-  },
-  "dependencies": {
-    "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@fortawesome/react-fontawesome": "^0.2.2",
-    "@popperjs/core": "^2.11.8",
-    "axios": "^1.7.7",
-    "bootstrap": "^5.3.3",
-    "cors": "^2.8.5",
-    "date-fns": "^4.1.0",
-    "express": "^4.21.0",
-    "hamburger-react": "^2.5.1",
-    "moment": "^2.30.1",
-    "mysql2": "^3.11.3",
-    "nodemon": "^3.1.7",
-    "react": "^18.3.1",
-    "react-bootstrap": "^2.10.5",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
-    "react-select": "^5.8.3",
-    "react-toastify": "^10.0.6",
-    "sequelize": "^6.37.3",
-    "sequelize-cli": "^6.6.2",
-    "sqlite3": "^5.1.7",
-    "sweetalert2": "^11.6.13"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.11.1",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "concurrently": "^9.2.1",
-    "cross-env": "^10.0.0",
-    "electron": "^37.4.0",
-    "electron-builder": "^26.0.12",
-    "eslint": "^9.11.1",
-    "eslint-plugin-react": "^7.36.1",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-    "eslint-plugin-react-refresh": "^0.4.9",
-    "gh-pages": "^6.3.0",
-    "globals": "^15.9.0",
-    "vite": "^5.4.1",
-    "wait-on": "^8.0.4"
-  },
-  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
-  "author": "",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ooteru23/React_App.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ooteru23/React_App/issues"
-  }
+    "name":  "bonus-calculation-app",
+    "homepage":  "https://ooteru23.github.io/React_App",
+    "private":  true,
+    "main":  "electron/main.js",
+    "version":  "0.0.0",
+    "type":  "commonjs",
+    "scripts":  {
+                    "dev":  "concurrently -k \"vite\" \"wait-on tcp:5173 \u0026\u0026 cross-env VITE_DEV=true electron .\"",
+                    "build:react":  "vite build",
+                    "build:win":  "vite build \u0026\u0026 electron-builder --win",
+                    "pack:dir":  "vite build \u0026\u0026 electron-builder --dir",
+                    "postinstall":  "electron-builder install-app-deps",
+                    "build":  "vite build",
+                    "lint":  "eslint .",
+                    "preview":  "vite preview",
+                    "start":  "electron .",
+                    "predeploy":  "npm run build",
+                    "deploy":  "gh-pages -d dist"
+                },
+    "build":  {
+                  "appId":  "com.yourco.bonuscalc",
+                  "productName":  "Bonus Calculation App",
+                  "asar":  true,
+                  "asarUnpack":  [
+                                     "**/*.node",
+                                     "node_modules/sqlite3/**"
+                                 ],
+                  "files":  [
+                                "dist/**/*",
+                                "electron/**/*",
+                                "shared/**/*",
+                                "models/**/*",
+                                "package.json",
+                                "node_modules/**/*",
+                                "!**/fsevents/**"
+                            ],
+                  "directories":  {
+                                      "buildResources":  "build"
+                                  },
+                  "publish":  null,
+                  "win":  {
+                              "target":  [
+                                             {
+                                                 "target":  "nsis",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             }
+                                         ]
+                          },
+                  "nsis":  {
+                               "oneClick":  true,
+                               "allowElevation":  true,
+                               "allowToChangeInstallationDirectory":  false,
+                               "createDesktopShortcut":  true,
+                               "createStartMenuShortcut":  true,
+                               "runAfterFinish":  true
+                           }
+              },
+    "dependencies":  {
+                         "@fortawesome/free-solid-svg-icons":  "^6.6.0",
+                         "@fortawesome/react-fontawesome":  "^0.2.2",
+                         "@popperjs/core":  "^2.11.8",
+                         "axios":  "^1.7.7",
+                         "bootstrap":  "^5.3.3",
+                         "cors":  "^2.8.5",
+                         "date-fns":  "^4.1.0",
+                         "express":  "^4.21.0",
+                         "hamburger-react":  "^2.5.1",
+                         "moment":  "^2.30.1",
+                         "mysql2":  "^3.11.3",
+                         "nodemon":  "^3.1.7",
+                         "react":  "^18.3.1",
+                         "react-bootstrap":  "^2.10.5",
+                         "react-dom":  "^18.3.1",
+                         "react-router-dom":  "^6.26.2",
+                         "react-select":  "^5.8.3",
+                         "react-toastify":  "^10.0.6",
+                         "sequelize":  "^6.37.3",
+                         "sequelize-cli":  "^6.6.2",
+                         "sqlite3":  "^5.1.7",
+                         "sweetalert2":  "^11.6.13"
+                     },
+    "devDependencies":  {
+                            "@eslint/js":  "^9.11.1",
+                            "@types/react":  "^18.3.3",
+                            "@types/react-dom":  "^18.3.0",
+                            "@vitejs/plugin-react":  "^4.3.1",
+                            "concurrently":  "^9.2.1",
+                            "cross-env":  "^10.0.0",
+                            "electron":  "^37.4.0",
+                            "electron-builder":  "^26.0.12",
+                            "eslint":  "^9.11.1",
+                            "eslint-plugin-react":  "^7.36.1",
+                            "eslint-plugin-react-hooks":  "^5.1.0-rc.0",
+                            "eslint-plugin-react-refresh":  "^0.4.9",
+                            "gh-pages":  "^6.3.0",
+                            "globals":  "^15.9.0",
+                            "vite":  "^5.4.1",
+                            "wait-on":  "^8.0.4"
+                        },
+    "description":  "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+    "author":  "",
+    "license":  "ISC",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/ooteru23/React_App.git"
+                   },
+    "bugs":  {
+                 "url":  "https://github.com/ooteru23/React_App/issues"
+             }
 }

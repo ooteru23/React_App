@@ -15,22 +15,3 @@ body {
   margin: 2px;
   cursor: pointer;
 }
-
-.input-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.input-wrapper::after {
-  content: "%";
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #555;
-  pointer-events: none;
-}
-
-.input-wrapper input {
-  padding-right: 20px;
-}

@@ -40,4 +40,8 @@ contextBridge.exposeInMainWorld("api", {
     create: (payload) => ipcRenderer.invoke("bonuses:create", payload),
     delete: (id) => ipcRenderer.invoke("bonuses:delete", id),
   },
+  reports: {
+    list: () => ipcRenderer.invoke("reports:list"),
+    create: (payload) => ipcRenderer.invoke("reports:create", payload),
+  },
 });

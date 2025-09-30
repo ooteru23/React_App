@@ -4,6 +4,7 @@ const { registerClientHandlers } = require("./client");
 const { registerSetupHandlers } = require("./setup");
 const { registerControlHandlers } = require("./control");
 const { registerBonusHandlers } = require("./bonus");
+const { registerReportHandlers } = require("./report");
 
 function registerIpc(db) {
   registerEmployeeHandlers(db);
@@ -12,6 +13,7 @@ function registerIpc(db) {
   registerSetupHandlers(db);
   registerControlHandlers(db);
   registerBonusHandlers(db);
+  registerReportHandlers(db);
 }
 
 module.exports = { registerIpc };

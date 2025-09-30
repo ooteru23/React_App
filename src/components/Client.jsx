@@ -6,6 +6,7 @@ import {
 } from "../services/clientsApi";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
 
 function Client() {
   const [listOfClient, setListOfClient] = useState([]);
@@ -64,6 +65,8 @@ function Client() {
 
   const searchTerm = searchFilter.toLowerCase();
 
+  const searchDigits = sanitizeDigits(searchFilter);
+
   const filteredClient = listOfClient.filter((client) => {
     const formattedValidDate = formatDate(client.createdAt);
 
@@ -75,9 +78,8 @@ function Client() {
         .toLowerCase()
         .includes(searchTerm) ||
       client.service?.toLowerCase().includes(searchTerm) ||
-      String(client.contract_value ?? "")
-        .toLowerCase()
-        .includes(searchTerm) ||
+      formatWithComma(client.contract_value).toLowerCase().includes(searchTerm) ||
+      (searchDigits && sanitizeDigits(client.contract_value).includes(searchDigits)) ||
       formattedValidDate.toLowerCase().includes(searchTerm)
     );
   });
@@ -251,7 +253,7 @@ function Client() {
                       <td>{client.pic}</td>
                       <td>{client.telephone}</td>
                       <td>{client.service}</td>
-                      <td>{client.contract_value}</td>
+                      <td>{formatWithComma(client.contract_value)}</td>
                       <td>{formatDate(client.createdAt)}</td>
                       <td>
                         <input
