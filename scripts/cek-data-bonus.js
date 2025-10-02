@@ -7,7 +7,7 @@ const sequelize = new Sequelize({
 
 (async () => {
   try {
-    const [rows] = await sequelize.query("SELECT * FROM Bonuses");
+    const [rows] = await sequelize.query("DELETE FROM Bonuses");
     console.table(rows);
   } catch (err) {
     console.error(err);
