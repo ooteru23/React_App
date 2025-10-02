@@ -6,28 +6,15 @@ import {
 import { list as listEmployees } from "../services/employeesApi";
 import { list as listClients } from "../services/clientsApi";
 import { list as listSetups } from "../services/setupsApi";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import Select from "react-select";
 import Swal from "sweetalert2";
-
-const MONTHS = [
-  { key: "month_jan", name: "January" },
-  { key: "month_feb", name: "February" },
-  { key: "month_mar", name: "March" },
-  { key: "month_apr", name: "April" },
-  { key: "month_may", name: "May" },
-  { key: "month_jun", name: "June" },
-  { key: "month_jul", name: "July" },
-  { key: "month_aug", name: "August" },
-  { key: "month_sep", name: "September" },
-  { key: "month_oct", name: "October" },
-  { key: "month_nov", name: "November" },
-  { key: "month_dec", name: "December" },
-];
+import { STATUS, MONTHS } from "../utils/constants";
+import { notify } from "../utils/notify";
 
 const STATUS_OPTIONS = [
-  { value: "ON TIME", label: "ON TIME" },
-  { value: "LATE", label: "LATE" },
+  { value: STATUS.ON_TIME, label: STATUS.ON_TIME },
+  { value: STATUS.LATE, label: STATUS.LATE },
 ];
 
 function Control() {
@@ -222,7 +209,7 @@ function Control() {
     event.preventDefault();
 
     if (!selectedEmployee) {
-      toast.warn("Silakan pilih karyawan terlebih dahulu.", {
+      notify.warning("Silakan pilih karyawan terlebih dahulu.", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -230,7 +217,7 @@ function Control() {
     }
 
     if (listOfSetup.length === 0) {
-      toast.info("Data setup belum tersedia.", {
+      notify.info("Data setup belum tersedia.", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -270,7 +257,7 @@ function Control() {
     if (activeMatchingSetups.length === 0) {
       setFilteredControl([]);
       setPage(1);
-      toast.info("Data setup tidak ditemukan untuk kriteria tersebut.", {
+      notify.info("Data setup tidak ditemukan untuk kriteria tersebut.", {
         position: "top-right",
         autoClose: 3000,
       });

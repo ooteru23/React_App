@@ -4,13 +4,13 @@ import {
   create as createOffer,
   remove as removeOffer,
 } from "../services/offersApi";
-import { format, parseISO, isValid } from "date-fns";
-import { id } from "date-fns/locale";
+import { formatDateValue } from "../utils/date";
 import { list as listEmployees } from "../services/employeesApi";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import Swal from "sweetalert2";
 import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
+import { notify } from "../utils/notify";
 
 function Offer() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -34,29 +34,7 @@ function Offer() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const formatDateValue = (value, pattern) => {
-    if (!value) {
-      return "";
-    }
-
-    let parsedValue = value;
-
-    if (typeof value === "string") {
-      const normalizedValue = /^\d{4}-\d{2}$/.test(value)
-        ? `${value}-01`
-        : value;
-
-      parsedValue = parseISO(normalizedValue);
-    } else if (!(value instanceof Date)) {
-      parsedValue = new Date(value);
-    }
-
-    if (isValid(parsedValue)) {
-      return format(parsedValue, pattern, { locale: id });
-    }
-
-    return typeof value === "string" ? value : String(value);
-  };
+  // date formatting moved to utils/date
 
   useEffect(() => {
     listEmployees()
@@ -138,7 +116,7 @@ function Offer() {
             Swal.fire({ title: "Saved!", icon: "success" });
           })
           .catch((error) => {
-            toast.error("Error Adding Data!", {
+            notify.error("Error Adding Data!", {
               position: "top-right",
               autoClose: 3000,
               hideProgressBar: false,
@@ -173,7 +151,7 @@ function Offer() {
             });
           })
           .catch((error) => {
-            toast.error("Error Deleting Data!", {
+            notify.error("Error Deleting Data!", {
               position: "top-right",
               autoClose: 3000,
               hideProgressBar: false,

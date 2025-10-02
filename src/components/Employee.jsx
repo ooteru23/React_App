@@ -5,9 +5,10 @@ import {
   remove as removeEmployee,
 } from "../services/employeesApi";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import Swal from "sweetalert2";
 import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
+import { notify } from "../utils/notify";
 
 function Employee() {
   const [listOfEmployee, setListOfEmployee] = useState([]);
@@ -69,7 +70,7 @@ function Employee() {
             Swal.fire({ title: "Saved!", icon: "success" });
           })
           .catch((error) => {
-            toast.error("Error Adding Data", {
+            notify.error("Error Adding Data", {
               position: "top-right",
               autoClose: 3000,
               hideProgressBar: false,
@@ -106,7 +107,7 @@ function Employee() {
             });
           })
           .catch((error) => {
-            toast.error("Error Deleting Data!", {
+            notify.error("Error Deleting Data!", {
               position: "top-right",
               autoClose: 3000,
               hideProgressBar: false,
@@ -132,6 +133,8 @@ function Employee() {
   const searchTerm = searchFilter.toLowerCase();
   const searchDigits = sanitizeDigits(searchFilter);
 
+  const formatNumber = (value) => formatWithComma(value);
+
   const filteredEmployee = listOfEmployee
     .filter(
       (employee) =>
@@ -152,7 +155,7 @@ function Employee() {
     page * limit
   );
 
-  const formatNumber = (value) => formatWithComma(value);
+  // moved above to avoid TDZ issues
 
   const handleChange = (e) => {
     const input = sanitizeDigits(e.target.value);

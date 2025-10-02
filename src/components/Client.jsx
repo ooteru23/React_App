@@ -4,9 +4,11 @@ import {
   remove as removeClient,
   update as updateClient,
 } from "../services/clientsApi";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import Swal from "sweetalert2";
 import { formatWithComma, sanitizeDigits } from "../utils/numberFormat";
+import { CLIENT_STATUS } from "../utils/constants";
+import { notify } from "../utils/notify";
 
 function Client() {
   const [listOfClient, setListOfClient] = useState([]);
@@ -104,7 +106,7 @@ function Client() {
             });
           })
           .catch((error) => {
-            toast.error("Error Deleting Data!", {
+            notify.error("Error Deleting Data!", {
               position: "top-right",
               autoClose: 3000,
               hideProgressBar: false,

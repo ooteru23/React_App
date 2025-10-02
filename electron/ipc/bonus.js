@@ -1,32 +1,47 @@
-const { ipcMain } = require("electron");
+const { z } = require("zod");
+const { asNumberId, safeHandle } = require("./_utils");
 
 function registerBonusHandlers(db) {
-  console.log("[IPC] Registering bonus handlers");
-  ipcMain.handle("bonuses:list", async () => {
+  const CHANNELS = Object.freeze({
+    LIST: "bonuses:list",
+    CREATE: "bonuses:create",
+    DELETE: "bonuses:delete",
+  });
+
+  const numberLike = z.union([z.number(), z.string()]);
+  const createSchema = z.object({
+    employee_name: z.string().min(1),
+    client_name: z.string().min(1),
+    month: z.string().min(1),
+    work_status: z.string().min(1),
+    net_value: numberLike,
+    disbursement_bonus: z.string().min(1),
+  });
+
+  safeHandle(CHANNELS.LIST, async () => {
     const rows = await db.Bonuses.findAll({ order: [["id", "ASC"]] });
     return rows.map((r) => r.toJSON());
   });
 
-  ipcMain.handle("bonuses:create", async (_e, payload) => {
-    const requiredFields = [
-      "employee_name",
-      "client_name",
-      "month",
-      "work_status",
-      "net_value",
-      "disbursement_bonus",
-    ];
-    for (const field of requiredFields) {
-      if (!payload?.[field]) throw new Error(`${field} is required`);
+  safeHandle(CHANNELS.CREATE, async (_e, payload) => {
+    const parsed = createSchema.safeParse(payload);
+    if (!parsed.success) {
+      const err = new Error("validation error");
+      err.code = "E_VALIDATION";
+      err.details = parsed.error.flatten();
+      throw err;
     }
     const row = await db.Bonuses.create(payload);
     return row.toJSON();
   });
 
-  ipcMain.handle("bonuses:delete", async (_e, id) => {
-    console.log("[IPC] bonuses:delete invoked", id);
-    const row = await db.Bonuses.findByPk(Number(id));
-    if (!row) return { success: false };
+  safeHandle(CHANNELS.DELETE, async (_e, id) => {
+    const row = await db.Bonuses.findByPk(asNumberId(id));
+    if (!row) {
+      const err = new Error("not found");
+      err.code = "E_NOT_FOUND";
+      throw err;
+    }
     await row.destroy();
     return { success: true };
   });

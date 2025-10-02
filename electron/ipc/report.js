@@ -1,29 +1,41 @@
-const { ipcMain } = require("electron");
+const { z } = require("zod");
+const { safeHandle } = require("./_utils");
 
 function registerReportHandlers(db) {
-  ipcMain.handle("reports:list", async () => {
+  const CHANNELS = Object.freeze({
+    LIST: "reports:list",
+    CREATE: "reports:create",
+  });
+
+  const numberLike = z.union([z.number(), z.string()]);
+  const createSchema = z.object({
+    employee_name: z.string().min(1),
+    month: z.string().min(1),
+    salary_deduction: numberLike,
+    month_ontime: numberLike,
+    month_late: numberLike,
+    bonus_component: numberLike,
+    percent_ontime: numberLike,
+    percent_late: numberLike,
+    total_ontime: numberLike,
+    total_late: numberLike,
+    bonus_ontime: numberLike,
+    bonus_late: numberLike,
+    total: numberLike,
+  });
+
+  safeHandle(CHANNELS.LIST, async () => {
     const rows = await db.Reports.findAll({ order: [["id", "ASC"]] });
     return rows.map((r) => r.toJSON());
   });
 
-  ipcMain.handle("reports:create", async (_e, payload) => {
-    const requiredFields = [
-      "employee_name",
-      "month",
-      "salary_deduction",
-      "month_ontime",
-      "month_late",
-      "bonus_component",
-      "percent_ontime",
-      "percent_late",
-      "total_ontime",
-      "total_late",
-      "bonus_ontime",
-      "bonus_late",
-      "total",
-    ];
-    for (const field of requiredFields) {
-      if (!payload?.[field]) throw new Error(`${field} is required`);
+  safeHandle(CHANNELS.CREATE, async (_e, payload) => {
+    const parsed = createSchema.safeParse(payload);
+    if (!parsed.success) {
+      const err = new Error("validation error");
+      err.code = "E_VALIDATION";
+      err.details = parsed.error.flatten();
+      throw err;
     }
     const row = await db.Reports.create(payload);
     return row.toJSON();
